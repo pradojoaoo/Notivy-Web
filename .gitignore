@@ -1,0 +1,11 @@
+node_modules/
+.node/
+node-*-win-x64.zip
+.next/
+out/
+build/
+.env*
+!.env.example
+*.log
+*.tsbuildinfo
+.DS_Store

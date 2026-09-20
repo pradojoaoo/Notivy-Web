@@ -1,17 +1,63 @@
+import Link from "next/link";
+import Image from "next/image";
+import NotificationPreview from "./_components/notification-preview";
+import "./landing.css";
+
+const features = [
+  ["grid", "Um visual com a sua identidade", "App, ícone, título, mensagem e horário reunidos em uma composição feita para o seu conteúdo."],
+  ["wand", "Cada detalhe é seu", "Transforme uma ideia em uma notificação com textos e elementos personalizados."],
+  ["bolt", "Direto ao que importa", "Um fluxo simples para concentrar seu tempo na próxima ideia."],
+  ["phone", "Pensado para stories", "Uma imagem vertical de 1080 × 1920 px, no formato dos seus conteúdos."],
+  ["eye", "Acompanhe o resultado", "Uma prévia da tela inteira para conferir a composição antes de finalizar."],
+];
+const questions = [
+  ["O que posso criar com o Notivy?", "Imagens de notificações personalizadas para stories, vídeos e demonstrações de marketing. O Notivy não envia notificações reais."],
+  ["Qual é o formato da imagem?", "O formato previsto é PNG vertical de 1080 × 1920 px, com wallpaper e notificação em um layout inspirado na tela bloqueada do iPhone."],
+  ["O que muda entre FREE e PRO?", "Os recursos visuais são iguais. O FREE prevê 2 exportações mensais por conta e o PRO, exportações ilimitadas por R$19,90/mês."],
+  ["Preciso ter experiência com edição?", "Não. A proposta é escolher os elementos, escrever sua mensagem e conferir a composição em uma prévia."],
+  ["Já posso assinar e exportar?", "Ainda não. Esta versão é um protótipo navegável. Exportação, contas, limites e cobrança serão implementados nas próximas etapas."],
+];
+function Icon({ type = "arrow" }) {
+  const paths = { arrow: "M5 12h14m-6-6 6 6-6 6", grid: "M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z", wand: "m4 20 14-14 2 2L6 22zM5 3v6M2 6h6m10 9v6m-3-3h6", bolt: "m13 2-9 12h7l-1 8 10-13h-8z", phone: "M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm3 17h4", eye: "M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zm7 0a3 3 0 1 0 6 0 3 3 0 0 0-6 0", check: "m5 12 4 4L19 6", play: "m8 4 12 8-12 8z" };
+  return <svg className="n-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[type]} /></svg>;
+}
+function IconStrip({ compact = false }) {
+  return <div className={`n-icon-strip ${compact ? "n-icon-strip-compact" : ""}`}><Image src="/images/icones-notivy.jpeg" width={1208} height={273} sizes={compact ? "460px" : "(max-width: 760px) 100vw, 1208px"} alt={compact ? "" : "Seleção visual de ícones de aplicativos disponíveis como referência"} aria-hidden={compact || undefined} /></div>;
+}
+function Plan({ pro = false }) {
+  return <article className={`n-pricecard ${pro ? "n-pro" : ""}`}>
+    <span className="n-plan-label">{pro ? "MAIS LIBERDADE" : "COMECE POR AQUI"}</span>
+    <h3>Notivy {pro ? "PRO" : "FREE"}</h3><p className="n-pill">{pro ? "Para criar sem limites" : "Para suas primeiras ideias"}</p>
+    <div className="n-price"><small>{pro ? "POR MÊS" : "GRÁTIS"}</small><strong><sup className="n-currency">R$</sup><span className="n-price-integer">{pro ? "19" : "0"}</span><sup className="n-price-cents">,{pro ? "90" : "00"}</sup></strong>{pro && <span>/mês</span>}</div>
+    <ul>{[pro ? "Exportações ilimitadas" : "2 exportações por mês", "Todos os recursos visuais", "Personalização de texto e ícone", "Wallpaper e horário personalizados", "Imagem PNG de 1080 × 1920 px"].map(item => <li key={item}><Icon type="check" />{item}</li>)}</ul>
+    <Link className="n-btn" href={pro ? "/assinar?plano=pro" : "/assinar?plano=free"}>{pro ? "Escolher PRO" : "Começar com FREE"}<Icon /></Link>
+    <small className="n-plan-note">{pro ? "Preço provisório. Assinatura ainda indisponível." : "Plano previsto. Explore agora a demonstração."}</small>
+  </article>;
+}
 export default function Home() {
-  return (
-    <main className="home">
-      <div className="home__content">
-        <span className="home__eyebrow">Notivy · projeto em construção</span>
-        <h1>Visuais de notificações para seus criativos.</h1>
-        <p>
-          Estamos preparando um editor para criar, visualizar e baixar uma imagem
-          PNG vertical pronta para stories e vídeos.
-        </p>
-        <p className="home__note">
-          O Notivy gera imagens. Ele não dispara notificações reais no celular.
-        </p>
-      </div>
+  return <div className="n-landing">
+    <a className="skip-link" href="#conteudo">Pular para o conteúdo</a>
+    <div className="n-topbar">— &nbsp; TESTE GRÁTIS ANTES DE DECIDIR &nbsp; —</div>
+    <header className="n-nav n-shell"><nav aria-label="Navegação principal"><a href="#recursos">Recursos</a><a href="#como">Como funciona</a><a href="#planos">Planos</a></nav><Link className="n-brand" href="/">Notivy</Link><Link className="n-btn n-nav-cta" href="#planos">Quero acessar <Icon /></Link></header>
+    <main id="conteudo">
+      <section className="n-hero n-shell">
+        <div><span className="n-tag"><i /> Seu próximo criativo começa no Notivy</span><h1>Notificações que fazem <em>suas ideias se destacarem.</em></h1><p>Crie imagens de notificações com a sua mensagem e um visual profissional para stories, vídeos e conteúdos de marketing.</p><div className="n-actions"><a className="n-btn" href="#planos">Começar agora <Icon /></a><a className="n-watch" href="#como"><Icon type="play" /> Ver como funciona</a></div><div className="n-trust"><span className="n-trust-icons"><Icon type="phone" /><Icon type="wand" /><Icon type="check" /></span><span><strong>Sua mensagem. Seu visual.</strong><small>Conheça o protótipo do Notivy</small></span></div></div>
+        <div className="n-hero-art"><div className="n-orbit" /><div className="n-device"><NotificationPreview backgroundUrl="/images/iphone-generic-v4.png" editableLockScreen renderControls referenceStyle weekday="Thu" day="17" alarmTime="05:30" mainTime="13:25" /></div><div className="n-float n-float-left"><Icon type="phone" /><span>Visual inspirado no<strong>iPhone 16</strong></span></div><div className="n-float n-float-right"><Icon type="wand" /><span>Feito para seus<strong>Criativos</strong></span></div><div className="n-count"><strong>1080 × 1920</strong><span>cada ideia, uma imagem</span></div></div>
+      </section>
+      <section className="n-proof" aria-label="Indicadores ilustrativos do protótipo"><div className="n-shell">{[["190+", "ÍCONES PROFISSIONAIS"], ["23 mil+", "CLIENTES ATENDIDOS"], ["2 anos+", "DE ESTABILIDADE"], ["iOS + Android", "COMPATIBILIDADE TOTAL"]].map(([value, label]) => <p key={value}><strong>{value}</strong><span>{label}</span></p>)}</div><p className="n-proof-disclaimer">Números e compatibilidade ilustrativos para avaliação do layout; não representam dados ou recursos atuais do Notivy.</p></section>
+      <section className="n-section n-shell" id="recursos"><header className="n-heading"><div><span className="n-kicker">MENOS ETAPAS, MAIS IDEIAS</span><h2>Seu conteúdo.<br /><em>Do seu jeito.</em></h2></div><p>Uma experiência focada na criação de imagens de notificações, da escolha do visual à composição final.</p></header><div className="n-features">{features.map(([icon, title, description], i) => <article key={title}><small>0{i + 1}</small><div className="n-feature-icon"><Icon type={icon} /></div><h3>{title}</h3><p>{description}</p>{i === 0 && <IconStrip compact />}</article>)}</div></section>
+      <section className="n-showcase"><header className="n-center n-shell"><span className="n-kicker">UMA IDENTIDADE EM CADA DETALHE</span><h2>Pequenos ícones.<br />Grandes possibilidades.</h2><p>Explore combinações para o seu conteúdo. Os nomes e símbolos exibidos pertencem às respectivas marcas e aparecem apenas como exemplos visuais.</p></header><div className="n-shell"><IconStrip /></div></section>
+      <section className="n-section n-shell" id="demonstracao"><header className="n-heading"><div><span className="n-kicker">DA MENSAGEM À COMPOSIÇÃO</span><h2>Imagine na sua tela.</h2></div><p>Uma notificação, um fundo e uma ideia. Veja como esses elementos se encontram.</p></header><div className="n-stage"><div><span className="n-kicker">NOTIVY / PREVIEW</span><h3>Uma nova ideia<br />acabou de chegar.</h3><p>Crie o visual do seu próximo conteúdo.</p><Link className="n-watch" href="#como">Ver como funciona <Icon /></Link></div><NotificationPreview backgroundUrl="/images/iphone-generic-v4.png" editableLockScreen renderControls weekday="Sex" day="19" month="Jun" alarmTime="05:30" mainTime="09:41" /></div><p className="n-caption">Composição ilustrativa. Nenhuma notificação real é enviada.</p></section>
+      <section className="n-section n-shell n-how" id="como"><div><span className="n-kicker">CONHEÇA O FLUXO</span><h2>Da primeira ideia<br />à imagem final.</h2><p>Um espaço para montar sua notificação e conferir cada detalhe.</p><ol>{[["Defina a aparência", "Comece pelo app, ícone e wallpaper."], ["Escreva sua mensagem", "Ajuste título, conteúdo e horário."], ["Confira a composição", "Veja o resultado no formato vertical completo."]].map(([title, text]) => <li key={title}><strong>{title}</strong><span>{text}</span></li>)}</ol><Link className="n-btn" href="#planos">Escolher meu plano <Icon /></Link></div><div className="n-demo"><NotificationPreview backgroundUrl="/images/iphone-generic-v4.png" editableLockScreen renderControls weekday="Sex" day="19" month="Jun" alarmTime="05:30" mainTime="09:41" /><div className="n-demo-note"><Icon type="play" /><span><strong>Explore o Notivy</strong><small>Prévia demonstrativa do editor</small></span></div></div></section>
+      <section className="n-section n-shell n-uses"><header className="n-heading"><div><span className="n-kicker">ESPAÇO PARA A SUA CRIATIVIDADE</span><h2>Uma ideia. Vários formatos.</h2></div><p>Use a composição como parte da sua narrativa.</p></header><div className="n-use-grid">{[["01 / STORIES", "Dê destaque à novidade", "Apresente uma coleção, um lançamento ou uma mensagem da sua marca."], ["02 / VÍDEOS", "Conte uma história", "Inclua uma notificação visual como elemento dos seus vídeos."], ["03 / DEMONSTRAÇÕES", "Torne sua ideia visível", "Apresente conceitos e exemplos de comunicação em uma imagem."]].map(([label, title, text]) => <article key={label}><span className="n-kicker">{label}</span><h3>{title}</h3><p>{text}</p></article>)}</div></section>
+      <section className="n-section n-shell n-reviews" id="avaliacoes" aria-labelledby="reviews-title">
+        <header className="n-heading"><div><span className="n-kicker">AVALIAÇÕES · EXEMPLOS DO PROTÓTIPO</span><h2 id="reviews-title">Quem cria, conta.</h2></div><div className="n-rating"><strong>4,9<small>/5</small></strong><div><span className="n-stars" aria-label="Nota ilustrativa: 4,9 de 5 estrelas">★★★★★</span><span className="n-rating-caption">Nota geral ilustrativa</span></div></div></header>
+        <p className="n-review-disclaimer">Depoimentos fictícios para demonstrar o visual. Ainda não há avaliações de clientes publicadas.</p>
+        <div className="n-review-grid">{[["A", "Ana", "Gostei de ver a ideia tomando forma na tela. O visual da notificação combina muito com os meus stories."], ["L", "Lucas", "Ter a mensagem e a prévia no mesmo lugar deixa o processo de criação muito mais claro."], ["M", "Marina", "Uma proposta prática para apresentar novidades e dar um toque diferente aos conteúdos."]].map(([initial, name, quote]) => <figure key={name}><span className="n-stars" aria-label="5 estrelas ilustrativas">★★★★★</span><blockquote>{quote}</blockquote><figcaption><span className="n-review-avatar" aria-hidden="true">{initial}</span><span><strong>{name}</strong><small>Perfil fictício · exemplo</small></span></figcaption></figure>)}</div>
+      </section>
+      <section className="n-section n-plans" id="planos"><div className="n-offer-copy"><span className="n-kicker">ESCOLHA SEU RITMO</span><h2>Comece no FREE.<br />Vá além com PRO.</h2><p>O mesmo cuidado com o visual. A liberdade de escolher quantas imagens criar.</p><span className="n-offer-note"><Icon type="check" /> Mesmos recursos nos dois planos</span></div><Plan /><Plan pro /></section>
+      <section className="n-section n-shell n-faq" id="faq"><header><span className="n-kicker">TUDO MAIS CLARO</span><h2>Vamos tirar<br />suas dúvidas.</h2><p>Conheça a proposta do Notivy.</p></header><div>{questions.map(([question, answer], i) => <details key={question} open={i === 0}><summary>{question}<span aria-hidden="true">＋</span></summary><p>{answer}</p></details>)}</div></section>
     </main>
-  );
+    <footer className="n-footer"><div className="n-shell"><Link className="n-brand" href="/">Notivy</Link><p>Imagens de notificações para dar forma às suas ideias.<br />Protótipo navegável · exportação em desenvolvimento.</p><span>© 2026 Notivy<br /><Link href="/entrar">Já sou cliente →</Link></span></div></footer>
+  </div>;
 }

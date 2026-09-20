@@ -9,3 +9,4 @@ build/
 *.log
 *.tsbuildinfo
 .DS_Store
+.tools/

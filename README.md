@@ -14,24 +14,33 @@ A **exportação PNG é a prioridade do primeiro incremento**: editor, preview e
 
 | Plano | Regra provisória de exportação |
 | --- | --- |
-| FREE | 3 exportações por mês por conta |
+| FREE | 2 exportações por mês por conta |
 | PRO | Exportações ilimitadas |
 
 Os dois planos terão os mesmos recursos visuais nesta proposta inicial. O preço de **R$19,90/mês para o PRO é uma hipótese**, não uma oferta validada. O limite do FREE será associado à conta quando houver autenticação. Os limites, a cobrança e o preço deverão ser testados com usuários e implementados nas etapas posteriores; o editor inicial sem conta pode validar preview e exportação antes de aplicar qualquer limite.
 
-## Como conferir esta etapa
+## Estado atual — etapa 3
 
-Este README é o resultado da etapa 1. Confira se o caso de uso, as dimensões e o conteúdo do PNG, o layout único e as hipóteses FREE/PRO estão claros. A ferramenta ainda não foi implementada; a correspondência entre preview e arquivo exportado será verificada quando o editor existir.
+O escopo do MVP está definido e a base está conectada ao [GitHub](https://github.com/pradojoaoo/Notivy-Web). Há um **protótipo navegável** de início, acesso, painel e editor. Login/cadastro e estado vazio do painel podem ser alternados para revisão; os campos e o preview do editor são ilustrativos. Autenticação, salvamento e download ainda não estão disponíveis.
+
+Consulte o [fluxo e roteiro de revisão](docs/fluxo-mvp.md). A etapa 4 implementará o editor sem conta, preview ao vivo e exportação PNG.
 
 ## Base do projeto
 
-O projeto usa **Next.js com React e App Router**. A rota inicial em `app/page.jsx` é uma página provisória que confirma que a base está funcionando; o editor e a exportação serão construídos em etapas posteriores. `app/layout.jsx` define a estrutura comum e os metadados, e `app/globals.css` contém os estilos da página. `package.json` lista as dependências e os comandos. `.gitignore` impede que dependências, arquivos gerados e segredos entrem no Git.
+O projeto usa **Next.js com React e App Router**. As telas ficam em `app/`, nas rotas `/`, `/entrar`, `/painel` e `/editor`. A pasta `app/_components/` reúne o cabeçalho/rodapé e o preview ilustrativo compartilhados. `app/layout.jsx` define a estrutura comum e os metadados, e `app/globals.css` contém os estilos responsivos. `package.json` lista as dependências e os comandos. `.gitignore` impede que dependências, arquivos gerados e segredos entrem no Git.
 
 Para rodar localmente, instale Node.js **20.9 ou mais recente** e, na pasta do projeto, execute:
 
 ```powershell
-npm install
+npm ci
 npm run dev
 ```
 
-Abra `http://localhost:3000` no navegador. Para conferir a qualidade da base, execute `npm run lint` e `npm run build`. Depois de instalar as dependências, use o `package-lock.json` gerado para manter as versões reproduzíveis.
+Abra `http://localhost:3000` no navegador. Para conferir a qualidade da base, execute `npm run lint` e `npm run build`. O `package-lock.json` registra as versões instaladas.
+
+Neste computador há também uma cópia portátil do Node.js na pasta ignorada `.node/`. Se `npm` não for reconhecido no PowerShell, habilite-a apenas no terminal atual:
+
+```powershell
+$env:Path = (Resolve-Path '.\.node\node-v24.19.0-win-x64').Path + ';' + $env:Path
+npm.cmd run dev
+```

@@ -146,7 +146,7 @@ export default function NotificationPreview({
           )}
         </div>
       </div>
-      <figcaption>Prévia atualizada em tempo real · proporção 7:16</figcaption>
+      <figcaption>Prévia atualizada em tempo real · mesma proporção do PNG 1080 × 1920</figcaption>
     </figure>
   );
 }

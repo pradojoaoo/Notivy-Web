@@ -47,25 +47,32 @@ export default function EditorPage() {
       const blob = await exportPreviewPng(previewRef.current);
       const filename = `notivy-${Date.now()}.png`;
       const url = URL.createObjectURL(blob);
-      setDownloadFile({ url, filename });
-
       const file = new File([blob], filename, { type: "image/png" });
-      const canShareFile = typeof navigator.share === "function" && typeof navigator.canShare === "function" && navigator.canShare({ files: [file] });
-      if (canShareFile && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-        try {
-          await navigator.share({ files: [file], title: "Imagem Notivy" });
-          setExportMessage("Imagem pronta. Escolha salvar em Fotos ou Arquivos no menu do telefone.");
-        } catch (shareError) {
-          if (shareError?.name === "AbortError") setExportMessage("Imagem pronta. Use o link abaixo para baixar ou abrir o PNG.");
-          else throw shareError;
-        }
-      } else {
-        const link = document.createElement("a"); link.download = filename; link.href = url; link.hidden = true;
-        document.body.appendChild(link); link.click(); link.remove();
-        setExportMessage("Imagem baixada com sucesso em 1080 × 1920 px.");
-      }
+      let canShare = false;
+      try { canShare = typeof navigator.share === "function" && navigator.canShare?.({ files: [file] }); }
+      catch { /* O download continua disponível mesmo se o compartilhamento não for suportado. */ }
+      setDownloadFile({ url, filename, file, canShare });
+
+      const link = document.createElement("a");
+      link.download = filename;
+      link.href = url;
+      link.hidden = true;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setExportMessage("PNG pronto em 1080 × 1920 px. Se o download não abrir, use o link abaixo.");
     } catch { setExportMessage("Não foi possível gerar a imagem. Tente novamente."); }
     finally { exportInProgress.current = false; setIsExporting(false); }
+  };
+
+  const sharePng = async () => {
+    if (!downloadFile?.canShare) return;
+    try {
+      await navigator.share({ files: [downloadFile.file], title: "Imagem Notivy" });
+      setExportMessage("Imagem compartilhada. Você também pode abrir o PNG pelo link abaixo.");
+    } catch (error) {
+      if (error?.name !== "AbortError") setExportMessage("Não foi possível compartilhar. Use o link abaixo para abrir o PNG.");
+    }
   };
 
   return <PrototypeShell current="/editor">
@@ -83,7 +90,7 @@ export default function EditorPage() {
         updateValue={updateValue} updateClock={updateClock}
         selectBuiltInIcon={selectBuiltInIcon} chooseIcon={chooseIcon} chooseBackground={chooseBackground}
         resetEditor={resetEditor} downloadPng={downloadPng} isExporting={isExporting}
-        exportMessage={exportMessage} downloadFile={downloadFile}
+        exportMessage={exportMessage} downloadFile={downloadFile} sharePng={sharePng}
       />
     </div>
   </PrototypeShell>;

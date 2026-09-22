@@ -15,6 +15,7 @@ export default function EditorControls({
   isExporting,
   exportMessage,
   downloadFile,
+  sharePng,
 }) {
   return (
     <section className="panel editor-panel" aria-labelledby="fields-title" inert={isExporting}>
@@ -66,7 +67,10 @@ export default function EditorControls({
         <button className="button button-primary" type="button" disabled={isExporting} onClick={downloadPng}>{isExporting ? "Preparando PNG..." : "Baixar PNG"}</button>
       </div>
       <p className="hint" id="export-note" aria-live="polite">{exportMessage}</p>
-      {downloadFile && <a className="text-link export-fallback" href={downloadFile.url} download={downloadFile.filename}>Baixar ou abrir o PNG novamente →</a>}
+      {downloadFile && <div className="export-ready-actions">
+        <a className="text-link export-fallback" href={downloadFile.url} download={downloadFile.filename}>Baixar ou abrir o PNG →</a>
+        {downloadFile.canShare && <button className="text-link" type="button" onClick={sharePng}>Compartilhar PNG →</button>}
+      </div>}
     </section>
   );
 }

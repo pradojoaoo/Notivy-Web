@@ -1,62 +1,44 @@
-# Etapa 3 — Protótipo do fluxo
+# Fluxo do MVP — etapa 4
 
-O protótipo permite revisar conteúdo, hierarquia e navegação em quatro telas. Os dados são exemplos fixos; não há autenticação, persistência, upload, contagem de exportações ou cobrança.
+O editor pode ser testado sem conta. Os campos alteram o preview imediatamente e a ação **Baixar PNG** gera uma imagem vertical de 1080 × 1920 px. Planos, login e painel ainda são demonstrações; nenhum plano é ativado e nenhum visual é salvo.
 
-## Caminhos
+## Rotas e caminhos
+
+| Rota | Função atual |
+| --- | --- |
+| `/` | Apresentar o produto e levar diretamente ao editor ou aos planos propostos. |
+| `/editor` | Editar, pré visualizar e exportar uma composição sem conta. |
+| `/assinar?plano=free` ou `?plano=pro` | Mostrar o plano selecionado; compra e ativação desabilitadas. |
+| `/entrar` | Simular entrada e primeiro acesso sem receber credenciais. |
+| `/painel` | Mostrar um exemplo fixo ou um estado vazio. |
 
 ```text
-Início → Começar agora → Acesso → Explorar painel → Painel → Novo visual → Editor
-Início → Conhecer o editor → Editor
-Editor → Voltar aos meus visuais → Painel
+Início → Testar o editor → Editar → Baixar PNG
+Início → Planos → Seleção demonstrativa → Acesso demonstrativo → Painel → Editor
 ```
 
-A navegação no cabeçalho é um auxílio de revisão do protótipo. Ela não representa controle de acesso e deve ser substituída quando as rotas autenticadas forem implementadas.
+O editor e o painel podem ser abertos por URL. Os links de navegação não são uma barreira de acesso; autenticação e autorização ainda não foram implementadas.
 
-| Tela | Rota | O que revisar |
-| --- | --- | --- |
-| Início | `/` | Proposta do produto, exemplo vertical, chamada para testar e preço explicitamente hipotético. |
-| Acesso | `/entrar` | Alternância entre entrar e criar conta; campos desabilitados, sem coleta de credenciais. |
-| Painel | `/painel` | Exemplo de visual, entrada para novo visual e alternância entre lista e estado vazio. |
-| Editor | `/editor` | Preview, app, ícone, título, mensagem, horário e fundo; salvar e baixar estão desabilitados. |
+## O que revisar no editor
 
-## Organização no celular
+1. Altere nome do app, título, mensagem e horário exibido; confirme a atualização imediata no preview.
+2. Ajuste data, horários e estilo do relógio. Teste também uma posição pronta e a posição livre da notificação.
+3. Envie um logo e um wallpaper em PNG, JPEG ou WebP e confira ambos no preview.
+4. Baixe o PNG e confira dimensões de 1080 × 1920 px, textos, imagens e posição dos elementos. A moldura decorativa do celular não deve aparecer no arquivo.
+5. Use **Restaurar exemplo** e confirme que os valores e as imagens iniciais retornam.
+6. No celular, confira o fluxo de compartilhamento ou use o link de download alternativo quando ele aparecer.
 
-As páginas usam uma coluna em telas de até 760 px. O preview vem antes dos campos no editor, permitindo entender o resultado antes de configurar a notificação. No computador, os campos ficam à esquerda e o preview à direita, acompanhando a rolagem. O exemplo mantém proporção 9:16, sem representar um PNG já exportado.
+Repita a revisão em larguras próximas de 320 px, 390 px e 1280 px, observando legibilidade, rolagem horizontal e foco visível ao navegar com Tab. No celular, o preview aparece antes dos campos; no computador, fica ao lado deles.
 
-## Roteiro de revisão
+## Limites e conteúdo ilustrativo
 
-1. Abra `/`, siga **Começar agora** até os planos e escolha **Começar com FREE**. Alterne **Entrar** e **Criar conta**, verificando que nenhum campo pode receber credenciais.
-2. Use **Explorar painel de demonstração**. Alterne **Ver painel vazio** e **Mostrar exemplo**.
-3. Abra o exemplo ou use **Novo visual**. Confira a notificação, a ordem dos campos e os avisos de ações indisponíveis.
-4. Volte ao painel e ao início. Teste também o atalho **Conhecer o editor**.
-5. Repita a navegação em largura de celular (390 px, incluindo uma conferência a 320 px) e computador (1280 px). Confira ausência de rolagem horizontal, legibilidade e foco visível ao usar Tab.
-
-## Direção visual
-
-Referência atual: https://geradormarketing.com. Landing completa com abertura, indicadores do produto, recursos, vitrine ilustrativa de ícones, composição de demonstração, passo a passo, exemplos de uso, planos FREE/PRO e FAQ expansível. Paleta original restaurada: fundo preto #080808, cartões #121212, amarelo #efc532 e branco. Botões, destaques, ícones ilustrativos e wallpaper seguem essa paleta, preservando o layout. Marca Notivy centralizada, tipografia Segoe UI e cantos arredondados. Os textos refletem o escopo do Notivy; números de clientes, avaliações e vídeos da referência não são apresentados como resultados próprios. Os ícones da vitrine são ilustrativos. Estilos da landing em app/landing.css; paleta interna em app/globals.css. Planos e exportação continuam demonstrativos, sem cobrança. Nenhum commit ou push nesta revisão.
+- O estado do editor vive apenas na página atual e se perde ao recarregar.
+- O painel não mostra arquivos reais e não oferece salvar, duplicar ou excluir.
+- FREE com 3 exportações mensais e PRO ilimitado por R$19,90/mês são hipóteses. Nenhum limite ou pagamento está ativo.
+- A vitrine pública de marcas é uma imagem ilustrativa; o editor oferece um ícone pronto de exemplo e aceita logo enviado pelo usuário.
+- A seção de avaliações usa perfis e notas fictícios, identificados na página. Não representam prova social do produto.
+- A composição imita uma tela bloqueada apenas como imagem. Não dispara notificações reais.
 
 ## Próximo incremento
 
-A etapa 4 tornará o editor utilizável sem conta: estado temporário, preview em tempo real e geração do PNG de 1080 × 1920 px. A aparência do exemplo atual é provisória. Login real, banco de dados, Storage e pagamento seguem o roadmap posterior.
-
-
-
-## Separação entre site público e área do cliente
-
-A landing `/` apresenta recursos, demonstrações, como funciona e planos. Os CTAs públicos levam aos planos ou à seleção `/assinar?plano=free|pro`; não abrem painel ou editor. O rodapé mantém “Já sou cliente” para retorno ao acesso. A seleção mostra o plano e explica a futura confirmação de pagamento do PRO ou ativação gratuita do FREE. Só um link explicitamente demonstrativo simula a próxima etapa de acesso, sem efetuar compra ou ativação.
-
-Em `/entrar` aparecem entrada e primeiro acesso, sem abas de painel e editor. Essas abas pertencem apenas às telas internas `/painel` e `/editor`. A separação é de navegação nesta etapa 3: URLs internas ainda são acessíveis diretamente. Autenticação e autorização no servidor, confirmação de pagamento e vínculo entre plano e conta serão implementados posteriormente. Não usar ocultação de links como proteção de acesso.
-
-Roteiro atualizado: landing → planos → seleção FREE/PRO → simulação de acesso → painel → editor; retorno de clientes pelo rodapé. Conferir também a ausência de links diretos ao painel/editor na landing e na navegação de acesso.
-
-## Indicadores e avaliações de exemplo
-
-Faixa com quatro indicadores no formato da referência enviada em 17/09 e seção de avaliações com nota geral ilustrativa 4,9/5 e três perfis fictícios. Avisos visíveis identificam números, compatibilidade, nota e depoimentos como exemplos do protótipo; não são métricas reais nem depoimentos verificados. Substituir pelos dados reais antes de apresentar como prova social do produto.
-
-## Vitrine de ícones
-
-A seção pública de ícones usa a imagem de referência enviada em 17/09, armazenada em `public/images/icones-notivy.jpeg`. A landing informa que nomes e símbolos pertencem às respectivas marcas e são exemplos visuais. Antes da versão real, confirmar quais marcas poderão ser oferecidas no editor e substituir a composição estática por ativos individuais autorizados.
-
-## Celular 3D e tamanho do horário
-
-O preview compartilhado agora inclui uma moldura de celular em CSS com profundidade, reflexos, botões laterais, ilha superior, barra de status, câmera, lanterna e indicador inferior. Data e horário usam uma tipografia estreita e leve inspirada na referência enviada em 17/09. No editor, o tamanho do horário pode ser ajustado de 75% a 130% com botões ou controle deslizante; este é o único ajuste ao vivo habilitado nesta etapa do protótipo.
+Após a validação visual do PNG, a próxima etapa de produto é definir a experiência com contas e visuais salvos. Controle de exportações e pagamento dependem da confirmação das regras comerciais e da implementação de autenticação, armazenamento e cobrança.

@@ -1,3 +1,9 @@
+/* Use the requested SF faces when installed on the viewing device. */
+@font-face{font-family:"SF Pro Rounded";src:local("SF Pro Rounded Bold"),local("SFProRounded-Bold");font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:"SF Pro Display";src:local("SF Pro Display Medium"),local("SFProDisplay-Medium");font-weight:500;font-style:normal;font-display:swap}
+@font-face{font-family:"SF Pro Display";src:local("SF Pro Display Semibold"),local("SFProDisplay-Semibold");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"SF Pro Text";src:local("SF Pro Text Semibold"),local("SFProText-Semibold");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"SF Pro Text";src:local("SF Pro Text Regular"),local("SFProText-Regular");font-weight:400;font-style:normal;font-display:swap}
 :root {
   color-scheme: dark;
   font-family: Arial, Helvetica, sans-serif;
@@ -256,6 +262,7 @@ h1,h2,h3,.brand-name,.button{font-family:"Segoe UI",Arial,sans-serif;text-transf
 .dynamic-island{position:absolute;top:15px;left:50%;z-index:8;width:29%;height:22px;transform:translateX(-50%);border:1px solid #242424;border-radius:999px;background:#020202;box-shadow:0 1px 2px #ffffff1f,inset 0 -1px #161616;pointer-events:none}
 .dynamic-island::before{position:absolute;top:50%;right:12%;width:8px;height:8px;content:"";transform:translateY(-50%);border-radius:50%;background:radial-gradient(circle at 35% 35%,#26354b,#05070b 62%);box-shadow:inset 0 0 2px #41628a}
 .dynamic-island i{position:absolute;top:50%;left:16%;width:43%;height:4px;transform:translateY(-50%);border-radius:999px;background:#0b0b0b}
+.preview-canvas > .dynamic-island{top:7px;width:calc((100% + 16px) * .29)}
 .phone-shell-3d .preview-canvas{width:100%;max-width:none;margin:0;border-radius:40px;background:#020304 url("/images/lockscreen-dubai-v2.png") center/cover no-repeat;box-shadow:inset 0 0 90px #0007}
 .phone-shell-3d .preview-canvas::before{inset:0;z-index:0;background:linear-gradient(180deg,#0008 0%,#0002 36%,transparent 66%,#0005 100%);filter:none;transform:none}
 .lock-status-bar{position:absolute;top:17px;right:20px;left:20px;z-index:4;display:flex;align-items:center;justify-content:space-between;color:#fff;font:700 .64rem/1 "Segoe UI",Arial,sans-serif;text-shadow:0 1px 5px #000}
@@ -300,23 +307,33 @@ h1,h2,h3,.brand-name,.button{font-family:"Segoe UI",Arial,sans-serif;text-transf
 .background-swatch{background:url("/images/iphone-generic-v4.png") center/cover no-repeat}
 
 /* Notificação compacta, translúcida e adaptada ao wallpaper. */
-.preview-canvas-photo .notification-readable{top:62%;right:7px;left:7px;grid-template-columns:34px minmax(0,1fr) auto;gap:7px;min-height:58px;padding:7px 9px 7px 7px;border:1px solid #ffffff55;border-radius:21px;background:linear-gradient(110deg,#9eb2c064,#607b8f52 50%,#8da3b363);box-shadow:inset 0 1px #ffffff61,0 5px 15px #0004;backdrop-filter:blur(18px) saturate(135%);-webkit-backdrop-filter:blur(18px) saturate(135%)}
-.notification-icon-exact{width:34px;height:34px;border:0;border-radius:8px;background-position:center;background-size:cover;box-shadow:0 2px 7px #29005066}
-.preview-canvas-photo .notification-readable-copy strong{margin-bottom:2px;font-size:.62rem;line-height:1.15}
-.preview-canvas-photo .notification-readable-copy>span{font-size:.53rem;line-height:1.2;-webkit-line-clamp:2}
-.preview-canvas-photo .notification-readable-time{font-size:.51rem;line-height:1.1}
+.preview-canvas-photo .notification-readable{top:62%;right:10px;left:10px;grid-template-columns:30px minmax(0,1fr);gap:8px;min-height:82px;padding:9px 10px;border:1px solid #ffffff55;border-radius:17px;background:linear-gradient(110deg,#9eb2c064,#607b8f52 50%,#8da3b363);box-shadow:inset 0 1px #ffffff61,0 5px 15px #0004;backdrop-filter:blur(18px) saturate(135%);-webkit-backdrop-filter:blur(18px) saturate(135%)}
+.notification-icon-exact{width:30px;height:30px;border:0;border-radius:7px;background-position:center;background-size:cover;box-shadow:0 1px 4px #29005044}
+.preview-canvas-photo .notification-readable-copy strong{margin-bottom:2px;font-family:"SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:13px;font-weight:600;line-height:1.2}
+.preview-canvas-photo .notification-readable-copy .notification-app-name{font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.preview-canvas-photo .notification-readable-time{position:absolute;top:10px;right:10px}
+.preview-canvas-photo .notification-app-name{padding-right:36px}
+.preview-canvas-photo .notification-readable-copy>span{font-family:"SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:12px;font-weight:400;line-height:1.3;-webkit-line-clamp:3}
+.preview-canvas-photo .notification-readable-time{font-size:9px;line-height:1.2}
+.preview-canvas-photo .notification-readable-copy{text-shadow:0 1px 2px #0005}
 
 /* Camada editável: esconde somente a interface original e mantém a fotografia. */
 .preview-mask-original::after{position:absolute;top:0;right:0;left:0;z-index:1;height:39%;content:"";background:linear-gradient(180deg,#a7cee3 0%,#9fc9df 100%)}
 .editable-lock-ui{position:absolute;inset:0;z-index:3;color:#f7fbff;text-shadow:0 1px 5px #36586d66;pointer-events:none}
 .editable-status-bar{position:absolute;top:18px;right:20px;left:20px;display:flex;align-items:center;justify-content:space-between;font:500 .61rem/1 "Segoe UI",Arial,sans-serif}
 .editable-status-bar .status-icons{gap:5px}.editable-status-bar .status-icons b{font-size:.62rem;font-weight:500}
-.editable-date-row{position:absolute;top:66px;right:0;left:0;display:flex;align-items:center;justify-content:center;gap:7px;font-family:"Arial Narrow","Segoe UI",sans-serif;font-size:1rem;font-weight:500;letter-spacing:-.035em}
+.editable-date-row{position:absolute;top:66px;right:0;left:0;display:flex;align-items:center;justify-content:center;gap:7px;font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:22px;font-weight:500;letter-spacing:-.035em}
 .editable-date-row svg{width:15px;height:15px;fill:currentColor}
-.editable-main-time{position:absolute;top:91px;right:-12px;left:-12px;display:block;font-family:"Arial Narrow","Roboto Condensed","Segoe UI",sans-serif;font-size:7.5rem;font-stretch:condensed;font-weight:200;line-height:.85;letter-spacing:-.1em;text-align:center;transform:scaleX(.71);transform-origin:top center}
+.editable-main-time{position:absolute;top:96px;right:0;left:0;display:block;font-family:"SF Pro Rounded",ui-rounded,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:92px;font-weight:700;line-height:.85;letter-spacing:-.03em;text-align:center}
 .preview-canvas-customized .lock-screen-controls{z-index:4;right:20px;bottom:22px;left:20px}
 .preview-canvas-customized .lock-control{width:47px;height:47px;background:#1717179c}
 .preview-canvas-customized .home-indicator{z-index:4}
+
+/* A flat, larger editor preview keeps text on the pixel grid. */
+.preview-panel .preview-figure{perspective:none}
+.preview-panel .phone-shell-3d{width:min(100%,360px);transform:none;transform-style:flat}
+.preview-panel .phone-shell-3d::after{transform:none}
+.preview-panel .editable-lock-ui{text-shadow:0 1px 2px #36586d44}
 
 /* Controles ativos do editor de demonstração. */
 .editor-panel fieldset{margin-top:25px;padding-top:22px;border-top:1px solid var(--line)}
@@ -363,3 +380,37 @@ select option{background:#0c0c0c;color:#f5f5f5}
 .export-fallback{display:inline-flex;margin-top:9px;font-weight:800}
 @media(max-width:760px){.icon-gallery>div{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:440px){.clock-style-grid,.position-controls{grid-template-columns:1fr}.clock-style-grid label:last-child{grid-column:auto}}
+
+/* Movimento compartilhado entre todas as páginas. */
+@keyframes site-page-enter{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes site-header-enter{from{opacity:0;transform:translateY(-16px)}to{opacity:1;transform:none}}
+@keyframes site-breathe{0%,100%{box-shadow:0 0 0 0 #efc53200}50%{box-shadow:0 0 0 8px #efc53212}}
+@keyframes site-shine{from{transform:translateX(-160%) skewX(-18deg)}to{transform:translateX(520%) skewX(-18deg)}}
+
+.page-container{animation:site-page-enter .55s cubic-bezier(.2,.75,.25,1) both}
+.site-header,.prototype-banner{animation:site-header-enter .5s cubic-bezier(.2,.75,.25,1) both}
+.site-header{animation-delay:.06s}
+.site-reveal{opacity:0;transform:translateY(28px) scale(.985);transition:opacity .65s cubic-bezier(.2,.75,.25,1),transform .65s cubic-bezier(.2,.75,.25,1);transition-delay:calc(var(--reveal-order,0) * 55ms);will-change:opacity,transform}
+.site-reveal.is-revealed{opacity:1;transform:none;will-change:auto}
+
+.button,.text-link,.step-nav a,.segmented-control button,.icon-gallery button,.clock-stepper button,.new-visual-card,.visual-card,.panel,input,textarea,select{transition:transform .22s ease,border-color .22s ease,background-color .22s ease,color .22s ease,box-shadow .22s ease,opacity .22s ease}
+.button,.new-visual-card{position:relative;overflow:hidden}
+.button::after,.new-visual-card::after{position:absolute;inset:-25% auto -25% -20%;width:20%;content:"";pointer-events:none;background:linear-gradient(90deg,transparent,#ffffff30,transparent);transform:translateX(-160%) skewX(-18deg)}
+.button:hover::after,.new-visual-card:hover::after{animation:site-shine .7s ease}
+.button:hover,.clock-stepper button:hover,.icon-gallery button:hover{transform:translateY(-2px)}
+.button:active,.segmented-control button:active,.clock-stepper button:active,.icon-gallery button:active{transform:translateY(0) scale(.97)}
+.text-link:hover,.step-nav a:hover{transform:translateX(3px)}
+.panel:hover,.visual-card:hover,.new-visual-card:hover{border-color:#efc53255;box-shadow:0 18px 50px #0005;transform:translateY(-3px)}
+input:focus,textarea:focus,select:focus{transform:translateY(-1px);box-shadow:0 0 0 3px #efc5321e}
+.prototype-dot{animation:site-breathe 2.2s ease-in-out infinite}
+.mini-notification{transition:transform .3s ease}.visual-card:hover .mini-notification{transform:translateY(-4px) rotate(-1deg)}
+.empty-symbol{transition:transform .35s cubic-bezier(.2,.8,.2,1),background-color .25s ease}.new-visual-card:hover .empty-symbol,.empty-state:hover .empty-symbol{transform:rotate(90deg) scale(1.08)}
+.notification-readable{transition:top .3s ease,left .3s ease,width .3s ease,transform .3s ease,box-shadow .3s ease}
+.file-picker:hover .file-preview{transform:scale(1.06)}
+.file-preview{transition:transform .25s ease}
+
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto!important}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.01ms!important}
+  .site-reveal{opacity:1!important;transform:none!important}
+}

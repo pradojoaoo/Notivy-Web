@@ -1,4 +1,5 @@
 import "./globals.css";
+import SiteMotion from "./_components/site-motion";
 
 export const metadata = {
   title: "Notivy",
@@ -8,7 +9,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="pt-BR">
-      <body>{children}</body>
+      <body><SiteMotion />{children}</body>
     </html>
   );
 }

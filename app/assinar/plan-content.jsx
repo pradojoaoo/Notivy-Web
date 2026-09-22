@@ -21,7 +21,7 @@ export default function PlanContent() {
           <p className="eyebrow">Plano selecionado</p>
           <h2 id="plan-title">Notivy {pro ? "PRO" : "FREE"}</h2>
           <p className="selected-plan-price">{pro ? "R$19,90" : "R$0,00"}<small>{pro ? "/mês" : " · gratuito"}</small></p>
-          <p>{pro ? "Exportações ilimitadas." : "2 exportações por mês por conta."}<br />Todos os recursos visuais incluídos.</p>
+          <p>{pro ? "Exportações ilimitadas." : "3 exportações por mês por conta."}<br />Todos os recursos visuais incluídos.</p>
           <p className="notice">Esta é uma prévia do fluxo. Nenhuma compra, ativação ou criação de conta será realizada.</p>
           <button className="button button-primary button-wide" disabled>{pro ? "Assinatura em breve" : "Ativação em breve"}</button>
           <Link className="text-link" href="/entrar">Simular próxima etapa: acesso →</Link>

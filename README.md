@@ -31,7 +31,7 @@ O horário mostrado na arte é apenas texto. Os uploads são usados localmente d
 
 | Plano | Hipótese comercial |
 | --- | --- |
-| FREE | 3 exportações por mês por conta. |
+| FREE | 1 exportação por mês por conta. |
 | PRO | Exportações ilimitadas por R$19,90/mês. |
 
 Esses planos **não estão ativos**. Não há cobrança, contas ou bloqueio por limite de exportações. O preço e as regras ainda precisam ser validados com usuários antes da implementação.

@@ -13,7 +13,7 @@ const features = [
 const questions = [
   ["O que posso criar com o Notivy?", "Prints simulados de notificações para stories, campanhas de vendas, lançamentos, cursos, infoprodutos, vídeos e conteúdos de influenciadores. O Notivy cria somente a imagem e não envia notificações reais."],
   ["Qual é o formato da imagem?", "O editor baixa um PNG vertical de 1080 × 1920 px, com wallpaper e notificação em um layout inspirado na tela bloqueada do iPhone."],
-  ["O que muda entre FREE e PRO?", "Os planos ainda não estão ativos. A proposta é oferecer os mesmos recursos visuais, com 3 exportações mensais no FREE e exportações ilimitadas no PRO por R$19,90/mês."],
+  ["O que muda entre FREE e PRO?", "Os planos ainda não estão ativos. A proposta é oferecer os mesmos recursos visuais, com 1 exportação mensal no FREE e exportações ilimitadas no PRO por R$19,90/mês."],
   ["Preciso instalar algum aplicativo?", "Não. O editor funciona direto no navegador. Escolha os elementos, escreva sua mensagem e baixe o PNG pronto, sem instalar nada no celular."],
   ["Já posso assinar e exportar?", "Você já pode testar o editor e baixar um PNG sem conta. Assinaturas, contas e limites de exportação ainda não estão disponíveis."],
 ];
@@ -29,7 +29,7 @@ function Plan({ pro = false }) {
     <span className="n-plan-label">{pro ? "MAIS LIBERDADE" : "COMECE POR AQUI"}</span>
     <h3>Notivy {pro ? "PRO" : "FREE"}</h3><p className="n-pill">{pro ? "Para campanhas sem limites" : "Para seus primeiros prints"}</p>
     <div className="n-price"><small>{pro ? "POR MÊS" : "GRÁTIS"}</small><strong><sup className="n-currency">R$</sup><span className="n-price-integer">{pro ? "19" : "0"}</span><sup className="n-price-cents">,{pro ? "90" : "00"}</sup></strong>{pro && <span>/mês</span>}</div>
-    <ul>{[pro ? "Exportações ilimitadas" : "3 exportações por mês", "Todos os recursos visuais", "Personalização de texto e ícone", "Wallpaper e horário personalizados", "Imagem PNG de 1080 × 1920 px"].map(item => <li key={item}><Icon type="check" />{item}</li>)}</ul>
+    <ul>{[pro ? "Exportações ilimitadas" : "1 exportação por mês", "Todos os recursos visuais", "Personalização de texto e ícone", "Wallpaper e horário personalizados", "Imagem PNG de 1080 × 1920 px"].map(item => <li key={item}><Icon type="check" />{item}</li>)}</ul>
     <Link className="n-btn" href={pro ? "/assinar?plano=pro" : "/assinar?plano=free"}>{pro ? "Escolher PRO" : "Começar com FREE"}<Icon /></Link>
     <small className="n-plan-note">{pro ? "Preço provisório. Assinatura ainda indisponível." : "Plano previsto. Explore agora a demonstração."}</small>
   </article>;

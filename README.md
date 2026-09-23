@@ -1,92 +1,171 @@
 # Notivy
 
-Ferramenta web para criar imagens de notificações personalizadas para stories, vídeos e outros criativos de marketing. A pessoa edita a composição no navegador, acompanha o preview e baixa um PNG. O Notivy **não envia nem agenda notificações reais** no iPhone ou Android.
+O Notivy é um editor web para criar **prints simulados de notificações** diretamente no navegador. O produto foi pensado para stories, campanhas, lançamentos, vendas, cursos, infoprodutos e conteúdos de influenciadores, sem exigir a instalação de um aplicativo no celular.
 
-## Estado do projeto
+O usuário personaliza a tela, acompanha o resultado em tempo real e baixa um PNG vertical pronto para publicação. O Notivy cria somente a imagem e **não envia notificações reais**.
 
-O projeto está na **etapa 4 do MVP: editor utilizável sem conta**. A landing page e as rotas de planos, acesso e painel formam um fluxo demonstrativo. O editor permite alterar o visual em tempo real e gerar um PNG vertical de **1080 × 1920 px**, com wallpaper e notificação na mesma imagem. A exportação usa a área interna do preview; a moldura decorativa do telefone fica fora do arquivo.
+## Status atual
 
-| Área | Situação atual |
+O **layout do MVP está pronto** e publicado para revisão:
+
+**Site:** https://notivy-editor-joaov.k5yxq7p244.chatgpt.site/
+
+| Área | Estado |
 | --- | --- |
-| Landing `/` | Apresenta o produto, exemplos visuais, recursos, planos propostos e FAQ. |
-| Editor `/editor` | Funciona sem conta, com estado temporário no navegador e exportação PNG. |
-| Planos `/assinar?plano=free` e `/assinar?plano=pro` | Seleção demonstrativa; nenhuma ativação ou compra é realizada. |
-| Acesso `/entrar` | Campos desabilitados; não coleta credenciais nem cria contas. |
-| Painel `/painel` | Exemplo fixo e estado vazio para revisão; não salva visuais. |
+| Landing `/` | Layout final com posicionamento comercial, recursos, demonstrações, planos e FAQ. |
+| Editor `/editor` | Funcional sem conta, com edição em tempo real e exportação PNG. |
+| Painel `/painel` | Fluxo demonstrativo com exemplo e estado vazio. |
+| Acesso `/entrar` | Interface demonstrativa; não coleta dados nem cria contas. |
+| Planos `/assinar` | Fluxo demonstrativo; não realiza cobrança ou ativação. |
+| Hospedagem | Publicação privada ativa pelo Sites, gerada a partir do build estático em `out/`. |
 
-As rotas de painel e editor são acessíveis diretamente. A navegação atual não implementa autenticação nem autorização. As alterações do editor se perdem ao recarregar a página.
+As páginas de conta, painel e assinatura representam o fluxo planejado. Autenticação, persistência, cobrança e limites reais ainda não foram implementados.
+
+## Proposta da marca
+
+- Criar prints realistas de notificações sem instalar aplicativo.
+- Gerar peças para stories e campanhas em poucos minutos.
+- Personalizar logo, nome do app, mensagem, horário, wallpaper e posição.
+- Atender campanhas de vendas, cursos, lançamentos e marketing de influenciadores.
+- Entregar um PNG pronto em **1080 × 1920 px**.
 
 ## Recursos do editor
 
-- Um layout vertical inspirado na tela bloqueada de um iPhone, com preview em tempo real.
-- Edição de nome e ícone do app, título, mensagem e horário exibido na notificação.
-- Edição de data e horários da tela, fonte, cor, peso, tamanho e espaçamento do relógio.
-- Posições prontas ou posição livre da notificação, ajustável por controles ou arrastando no preview.
-- Um ícone pronto de exemplo e envio de logo e wallpaper próprios em PNG, JPEG ou WebP.
-- Restauração do exemplo inicial e download do PNG; em celulares compatíveis, opção de compartilhar o arquivo.
+- Preview vertical inspirado na tela bloqueada do iPhone.
+- Edição de data, horários e relógio principal.
+- Personalização de fonte, cor, peso, tamanho e espaçamento do relógio.
+- Edição do nome do app, título, mensagem e horário da notificação.
+- Posições prontas e posição livre, inclusive com arraste direto no preview.
+- Upload local de logo e wallpaper em PNG, JPEG ou WebP.
+- Galeria com 14 logos bancárias prontas.
+- Exportação em PNG de 1080 × 1920 px.
+- Download direto e compartilhamento em celulares compatíveis.
+- Restauração rápida do exemplo inicial.
 
-O horário mostrado na arte é apenas texto. Os uploads são usados localmente durante a sessão e não são enviados a um servidor pelo editor.
+Os uploads permanecem somente na sessão do navegador e não são enviados para um servidor pelo editor.
 
-## Planos propostos
+## Logos disponíveis
 
-| Plano | Hipótese comercial |
+- Nubank
+- Banco do Brasil
+- Santander
+- Itaú
+- Mercado Pago
+- Caixa
+- PicPay
+- Neon
+- Banco PAN
+- Inter
+- C6 Bank
+- Sicoob
+- Sicredi
+- BTG Pactual
+
+Ao selecionar uma logo pronta, o nome do banco também é preenchido automaticamente na notificação. O usuário pode substituir qualquer opção por uma imagem própria.
+
+## Exportação PNG
+
+A exportação utiliza `modern-screenshot` para capturar a tela e uma composição em Canvas para desenhar o vidro e o conteúdo da notificação de forma estável. Essa etapa evita faixas e marcas observadas em capturas feitas no Safari do iPhone.
+
+O arquivo final:
+
+- possui 1080 × 1920 px;
+- mantém a proporção e a posição vistas no editor;
+- inclui wallpaper, relógio, status, notificação e controles da tela;
+- exclui a moldura decorativa externa do telefone;
+- preserva logos personalizadas e imagens enviadas pelo usuário.
+
+O primeiro clique inicia o download. Depois da geração, o editor também mantém um link de abertura e oferece compartilhamento quando o navegador permite.
+
+## Planos apresentados no MVP
+
+| Plano | Proposta |
 | --- | --- |
 | FREE | 1 exportação por mês por conta. |
 | PRO | Exportações ilimitadas por R$19,90/mês. |
 
-Esses planos **não estão ativos**. Não há cobrança, contas ou bloqueio por limite de exportações. O preço e as regras ainda precisam ser validados com usuários antes da implementação.
+Os planos ainda são demonstrativos. O editor não aplica limites e não processa pagamentos nesta etapa.
 
-## Tecnologia e organização
+## Tecnologia
 
-O projeto usa Next.js 16 com App Router, React 19 e `modern-screenshot`. O build gera um site estático em `out/` por meio de `output: "export"` em `next.config.js`.
+- Next.js 16 com App Router
+- React 19
+- `modern-screenshot` 4.7
+- Canvas do navegador para a composição final da notificação
+- ESLint 9
+- Exportação estática do Next.js para `out/`
+- Hospedagem pelo Sites
+
+## Organização principal
 
 ```text
 app/
-  page.jsx                 landing page
-  landing.css              estilos da landing
-  globals.css              estilos compartilhados e telas internas
-  layout.jsx               metadados e estrutura comum
-  _components/             preview, navegação demonstrativa e animação visual
-  _lib/export-preview.js   geração do PNG a partir do preview
+  page.jsx                       landing page
+  landing.css                    estilos da landing
+  globals.css                    estilos compartilhados e telas internas
+  layout.jsx                     metadados e estrutura global
+  _components/
+    notification-preview.jsx     telefone e notificação reutilizáveis
+    prototype-shell.jsx          navegação das telas internas
+    site-motion.jsx              animações da interface
+  _lib/
+    export-preview.js            geração do PNG final
   editor/
-    page.jsx               estado do editor e ação de exportar
-    _components/           controles do editor
-    _lib/                  valores padrão do editor
-  assinar/ entrar/ painel/  demais rotas
-public/images/             imagens usadas no protótipo
-docs/fluxo-mvp.md          fluxo e roteiro de revisão
+    page.jsx                     estado, uploads, download e compartilhamento
+    _components/
+      editor-controls.jsx        campos e galeria de logos
+    _lib/
+      editor-config.js           valores iniciais e logos disponíveis
+  assinar/                       demonstração de planos
+  entrar/                        demonstração de acesso
+  painel/                        demonstração do painel
+public/images/
+  logos/                         logos bancárias do editor
+.openai/hosting.json             configuração da publicação estática
 ```
-
-Os diretórios iniciados por `_` dentro de `app/` organizam código que não representa uma rota. `.openai/hosting.json` aponta a hospedagem estática para `out/`; sua presença não confirma uma publicação ativa.
 
 ## Executar localmente
 
-Use Node.js 20.9 ou mais recente:
+Requer Node.js 20.9 ou mais recente.
 
 ```powershell
 npm ci
 npm run dev
 ```
 
-Abra `http://localhost:3000`. Para verificar o código e gerar a versão estática:
+Abra `http://localhost:3000`.
+
+Para validar e gerar o site estático:
 
 ```powershell
 npm run lint
 npm run build
 ```
 
-Neste computador há também um Node.js portátil na pasta ignorada `.node/`. Se `npm` não estiver no `PATH`, habilite essa cópia apenas no terminal atual:
+Neste computador também existe uma instalação portátil do Node.js na pasta ignorada `.node/`. Caso `npm` não esteja disponível no `PATH`:
 
 ```powershell
 $env:Path = (Resolve-Path '.\.node\node-v24.19.0-win-x64').Path + ';' + $env:Path
 npm.cmd run dev
 ```
 
-## Próximas etapas
+## Validações realizadas
 
-1. Validar visualmente a correspondência entre preview e PNG em diferentes navegadores e celulares, incluindo logos e wallpapers enviados pelo usuário.
-2. Implementar contas, controle de acesso, persistência dos visuais e armazenamento dos arquivos, caso esses recursos sejam confirmados para o produto.
-3. Validar e implementar limites do FREE, assinatura PRO e confirmação de pagamento.
-4. Substituir exemplos de avaliações e ícones de marcas por conteúdo e ativos autorizados antes do lançamento comercial.
+- Build estático completo das seis rotas.
+- Lint do projeto.
+- Exportação desktop e mobile em 1080 × 1920 px.
+- Exportação com textos longos, posição livre e uploads personalizados.
+- Seleção das 14 logos e preenchimento automático do nome do banco.
+- Primeiro download e fallback para abrir o PNG.
+- Ajuste do preview e do PNG para remover marcas laterais da notificação.
 
-O [roteiro de revisão](docs/fluxo-mvp.md) descreve os caminhos do protótipo e os testes manuais recomendados.
+## Próximas etapas de produto
+
+1. Implementar cadastro, login e sessões.
+2. Salvar, duplicar e excluir prints no painel.
+3. Aplicar o limite real de 1 exportação mensal no FREE.
+4. Integrar cobrança e assinatura do PRO.
+5. Armazenar arquivos quando houver contas e persistência.
+6. Revisar licenças e autorizações de uso das marcas antes do lançamento comercial.
+
+O código atual representa o MVP visual e funcional do editor, com o **layout pronto** para a próxima etapa de implementação do produto.

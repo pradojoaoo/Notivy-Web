@@ -29,7 +29,11 @@ export default function EditorPage() {
   const updateClock = (field) => (event) => setClock((current) => ({ ...current, [field]: event.target.value }));
   const chooseBackground = (event) => { const file = event.target.files?.[0]; if (!file) return; const nextUrl = URL.createObjectURL(file); setCustomBackgroundUrl(nextUrl); setBackgroundUrl(nextUrl); };
   const chooseIcon = (event) => { const file = event.target.files?.[0]; if (!file) return; const nextUrl = URL.createObjectURL(file); setCustomIconUrl(nextUrl); setAppIcon(nextUrl); };
-  const selectBuiltInIcon = (source) => { setCustomIconUrl(""); setAppIcon(source); };
+  const selectBuiltInIcon = (icon) => {
+    setCustomIconUrl("");
+    setAppIcon(icon.src);
+    setValues((current) => ({ ...current, appName: icon.name }));
+  };
   const setFreePosition = ({ x, y }) => setValues((current) => ({ ...current, notificationPosition: "free", notificationX: x, notificationY: y }));
 
   const resetEditor = () => {

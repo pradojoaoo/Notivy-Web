@@ -54,7 +54,7 @@ export default function EditorControls({
         )}
         <div className="icon-gallery" aria-label="Ícones prontos">
           <span className="field-label">Ícones prontos</span>
-          <div>{BUILT_IN_ICONS.map((icon) => <button className={appIcon === icon.src ? "is-selected" : ""} type="button" key={icon.name} onClick={() => selectBuiltInIcon(icon.src)} aria-label={`Usar ícone ${icon.name}`} title={icon.name}><i style={{ backgroundImage: `url("${icon.src}")` }} /></button>)}</div>
+          <div>{BUILT_IN_ICONS.map((icon) => <button className={appIcon === icon.src ? "is-selected" : ""} type="button" key={icon.name} onClick={() => selectBuiltInIcon(icon)} aria-label={`Usar ícone ${icon.name}`} title={icon.name}><i style={{ backgroundImage: `url("${icon.src}")` }} /></button>)}</div>
         </div>
         <div className="upload-grid">
           <label className="file-picker"><span>Logo personalizado</span><span className="file-picker-button"><i className="file-preview file-preview-icon" style={{ backgroundImage: `url("${appIcon}")` }} />Enviar logo</span><input type="file" accept="image/png,image/jpeg,image/webp" onChange={chooseIcon} /></label>

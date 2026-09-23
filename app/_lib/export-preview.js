@@ -2,7 +2,7 @@ import { domToCanvas } from "modern-screenshot";
 
 const OUTPUT_WIDTH = 1080;
 const OUTPUT_HEIGHT = 1920;
-const RENDER_SCALE = 2;
+const RENDER_SCALE = 1;
 
 function preserveLineClamp(node) {
   // Chromium reports a clamped -webkit-box as flow-root in computed styles.

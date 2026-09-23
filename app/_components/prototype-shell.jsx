@@ -20,7 +20,7 @@ export default function PrototypeShell({ current, children }) {
         </nav>
       </header>
       <main id="conteudo" className="page-container">{children}</main>
-      <footer className="site-footer"><span>Notivy · visuais para suas ideias.</span><span>Imagens personalizadas, sem disparo de notificações reais.</span></footer>
+      <footer className="site-footer"><span>Notivy · prints de notificações para marketing.</span><span>Crie pelo navegador, sem instalar aplicativo e sem disparar notificações reais.</span></footer>
     </>
   );
 }

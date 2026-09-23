@@ -19,7 +19,7 @@ export default function EditorControls({
 }) {
   return (
     <section className="panel editor-panel" aria-labelledby="fields-title" inert={isExporting}>
-      <h2 id="fields-title">Personalize a tela</h2>
+      <h2 id="fields-title">Personalize seu print</h2>
 
       <fieldset>
         <legend>Data e horário</legend>

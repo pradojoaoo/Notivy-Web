@@ -76,9 +76,9 @@ export default function EditorPage() {
   };
 
   return <PrototypeShell current="/editor">
-    <Link className="text-link back-link" href="/painel">← Voltar aos meus visuais</Link>
-    <div className="page-heading"><div><p className="eyebrow">Editor de demonstração</p><h1>Seu novo visual</h1><p>Altere os campos e acompanhe o resultado na tela.</p></div><span className="badge">Edição ao vivo</span></div>
-    <p className="notice" id="editor-note">O editor está liberado para testes. As alterações aparecem imediatamente no telefone.</p>
+    <Link className="text-link back-link" href="/painel">← Voltar aos meus prints</Link>
+    <div className="page-heading"><div><p className="eyebrow">Criador de notificações</p><h1>Crie seu print</h1><p>Personalize a notificação e veja o resultado pronto para seu story.</p></div><span className="badge">Edição ao vivo</span></div>
+    <p className="notice" id="editor-note">Crie direto no navegador, sem instalar aplicativo. As alterações aparecem imediatamente no telefone.</p>
     <div className="editor-grid">
       <section className="panel preview-panel" aria-labelledby="preview-title" aria-busy={isExporting}>
         <div className="section-heading"><h2 id="preview-title">Preview</h2><span className="badge">1080 × 1920</span></div>

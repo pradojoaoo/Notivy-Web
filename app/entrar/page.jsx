@@ -9,7 +9,7 @@ export default function AccessPage() {
   return (
     <PrototypeShell current="/entrar">
       <div className="access-layout">
-        <section className="access-intro"><p className="eyebrow">Área do cliente</p><h1>Seu espaço<br /><span>de criação.</span></h1><p className="lead">Acesse sua conta para encontrar seus visuais e abrir o editor. O acesso PRO será liberado após a confirmação da assinatura.</p><Link className="text-link" href="/#planos">Ainda não escolheu um plano? Conheça os planos →</Link></section>
+        <section className="access-intro"><p className="eyebrow">Área do cliente</p><h1>Seus prints<br /><span>em um só lugar.</span></h1><p className="lead">Acesse sua conta para encontrar suas notificações, criar novas campanhas e abrir o editor. O acesso PRO será liberado após a confirmação da assinatura.</p><Link className="text-link" href="/#planos">Ainda não escolheu um plano? Conheça os planos →</Link></section>
         <section className="panel access-card" aria-labelledby="access-title">
           <div className="segmented-control" role="group" aria-label="Tipo de acesso"><button type="button" aria-pressed={!creatingAccount} onClick={() => setCreatingAccount(false)}>Entrar</button><button type="button" aria-pressed={creatingAccount} onClick={() => setCreatingAccount(true)}>Primeiro acesso</button></div>
           <h2 id="access-title">{creatingAccount ? "Crie seu espaço" : "Bom ter você de volta"}</h2>

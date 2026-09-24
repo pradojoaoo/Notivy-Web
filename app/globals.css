@@ -118,6 +118,13 @@ label .hint { font-weight: 400; }
 .visual-card-body { padding: 22px; }
 .visual-card-body h2 { margin: 16px 0 8px; font-size: 1.15rem; }
 .visual-card-body p { color: var(--muted); font-size: 0.8rem; }
+.visual-card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.visual-card-actions .button { min-height: 42px; padding: 10px 12px; }
+.button-quiet { border-color: #ffffff24; background: transparent; color: #d7d7d7; }
+.button-quiet:hover:not(:disabled) { border-color: #efc53288; color: #efc532; }
+.button-danger { border-color: #d25b5b55; background: #d25b5b12; color: #ffb4b4; }
+.button-danger:hover:not(:disabled) { border-color: #d25b5b; background: #d25b5b24; }
+.visual-card[aria-busy="true"] { opacity: .72; }
 .new-visual-card { display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px; min-height: 220px; border: 1px dashed #5c5028; border-radius: 12px; text-align: center; padding: 24px; }
 .new-visual-card:hover { background: #1c190e; }
 .new-visual-card > span:last-child { color: var(--muted); font-size: 0.8rem; }

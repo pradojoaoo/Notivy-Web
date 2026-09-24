@@ -14,14 +14,14 @@ O **layout do MVP está pronto** e publicado para revisão:
 | --- | --- |
 | Landing `/` | Layout final com posicionamento comercial, recursos, demonstrações, planos e FAQ. |
 | Editor `/editor` | Funcional sem conta, com edição em tempo real e exportação PNG. |
-| Painel `/painel` | Fluxo demonstrativo com exemplo e estado vazio. |
-| Acesso `/entrar` | Interface demonstrativa; não coleta dados nem cria contas. |
+| Painel `/painel` | Lista, abre, duplica e exclui os prints do usuário. |
+| Acesso `/entrar` | Cadastro, login, sessão e logout conectados ao Supabase Auth. |
 | Planos `/assinar` | Fluxo demonstrativo; não realiza cobrança ou ativação. |
 | Hospedagem | Publicação privada ativa pelo Sites, gerada a partir do build estático em `out/`. |
 
-Na versão publicada, as páginas de conta, painel e assinatura representam o fluxo planejado. Autenticação, persistência, cobrança e limites reais ainda não estão ativos nesse endereço.
+Na versão publicada, autenticação, persistência dos prints e armazenamento privado de imagens estão ativos. Cobrança e limites reais ainda não estão ativos nesse endereço.
 
-### Etapa 5 em desenvolvimento local
+### Etapa atual do MVP
 
 O código local já iniciou a evolução além da versão publicada:
 
@@ -31,9 +31,8 @@ O código local já iniciou a evolução além da versão publicada:
 - painel conectado aos projetos do usuário autenticado;
 - editor preparado para salvar e reabrir configurações;
 - logos e wallpapers enviados são armazenados em um bucket privado, com acesso limitado ao proprietário;
+- prints podem ser duplicados com suas imagens ou excluídos com a limpeza dos arquivos associados;
 - cobrança e limite mensal de exportações continuam desativados.
-
-Essas alterações ainda precisam de um teste completo com uma conta confirmada antes de uma nova publicação.
 
 ## Proposta da marca
 
@@ -177,9 +176,8 @@ npm.cmd run dev
 ## Próximas etapas de produto
 
 1. Testar recuperação de senha de ponta a ponta.
-2. Adicionar duplicação e exclusão de prints, incluindo a limpeza dos arquivos associados.
-3. Aplicar o limite real de 1 exportação mensal no FREE.
-4. Integrar cobrança e assinatura do PRO.
-5. Revisar licenças e autorizações de uso das marcas antes do lançamento comercial.
+2. Aplicar o limite real de 1 exportação mensal no FREE.
+3. Integrar cobrança e assinatura do PRO.
+4. Revisar licenças e autorizações de uso das marcas antes do lançamento comercial.
 
 O código atual representa o MVP visual e funcional do editor, com o **layout pronto** para a próxima etapa de implementação do produto.

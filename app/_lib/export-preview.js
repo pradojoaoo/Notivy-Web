@@ -49,6 +49,18 @@ function backgroundImageUrl(element) {
   return match?.[1] ?? "";
 }
 
+function scaleColorAlpha(color, factor) {
+  if (factor === 1) return color;
+  const sample = document.createElement("canvas");
+  sample.width = 1;
+  sample.height = 1;
+  const sampleContext = sample.getContext("2d");
+  sampleContext.fillStyle = color;
+  sampleContext.fillRect(0, 0, 1, 1);
+  const [red, green, blue, alpha] = sampleContext.getImageData(0, 0, 1, 1).data;
+  return `rgba(${red}, ${green}, ${blue}, ${(alpha / 255) * factor})`;
+}
+
 function canvasFont(element, scale) {
   const style = getComputedStyle(element);
   return `${style.fontWeight} ${Number.parseFloat(style.fontSize) * scale}px ${style.fontFamily}`;
@@ -106,9 +118,10 @@ async function drawNotification(context, screen, output) {
   const notificationStyle = getComputedStyle(notification);
   const cssBlur = Number.parseFloat(notificationStyle.getPropertyValue("--notification-glass-blur")) || 18;
   const saturation = notificationStyle.getPropertyValue("--notification-glass-saturation").trim() || "125%";
-  const tintStart = notificationStyle.getPropertyValue("--notification-tint-start").trim() || "rgba(58, 70, 84, .40)";
-  const tintMiddle = notificationStyle.getPropertyValue("--notification-tint-middle").trim() || "rgba(31, 43, 58, .36)";
-  const tintEnd = notificationStyle.getPropertyValue("--notification-tint-end").trim() || "rgba(25, 35, 50, .42)";
+  const exportAlphaScale = notification.classList.contains("notification-transparency-less") ? .9 : 1;
+  const tintStart = scaleColorAlpha(notificationStyle.getPropertyValue("--notification-tint-start").trim() || "rgba(58, 70, 84, .40)", exportAlphaScale);
+  const tintMiddle = scaleColorAlpha(notificationStyle.getPropertyValue("--notification-tint-middle").trim() || "rgba(31, 43, 58, .36)", exportAlphaScale);
+  const tintEnd = scaleColorAlpha(notificationStyle.getPropertyValue("--notification-tint-end").trim() || "rgba(25, 35, 50, .42)", exportAlphaScale);
   const blurRadius = cssBlur * scale;
   const glassPadding = Math.ceil(blurRadius * 2);
 

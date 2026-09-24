@@ -13,9 +13,9 @@ const features = [
 const questions = [
   ["O que posso criar com o Notivy?", "Prints simulados de notificações para stories, campanhas de vendas, lançamentos, cursos, infoprodutos, vídeos e conteúdos de influenciadores. O Notivy cria somente a imagem e não envia notificações reais."],
   ["Qual é o formato da imagem?", "O editor baixa um PNG vertical de 1080 × 1920 px, com wallpaper e notificação em um layout inspirado na tela bloqueada do iPhone."],
-  ["O que muda entre FREE e PRO?", "Os planos ainda não estão ativos. A proposta é oferecer os mesmos recursos visuais, com 1 exportação mensal no FREE e exportações ilimitadas no PRO por R$19,90/mês."],
+  ["O que muda entre FREE e PRO?", "O FREE inclui 1 exportação mensal por conta. O PRO, com exportações ilimitadas por R$19,90/mês, ainda é uma demonstração e não processa pagamentos."],
   ["Preciso instalar algum aplicativo?", "Não. O editor funciona direto no navegador. Escolha os elementos, escreva sua mensagem e baixe o PNG pronto, sem instalar nada no celular."],
-  ["Já posso criar uma conta e exportar?", "Sim. Você pode criar uma conta gratuita, salvar seus prints e baixar o PNG. Assinaturas PRO e limites mensais de exportação ainda não estão ativos."],
+  ["Já posso criar uma conta e exportar?", "Sim. Você pode criar uma conta gratuita, salvar seus prints e baixar 1 PNG por mês. A assinatura PRO ainda não está disponível."],
 ];
 function Icon({ type = "arrow" }) {
   const paths = { arrow: "M5 12h14m-6-6 6 6-6 6", grid: "M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z", wand: "m4 20 14-14 2 2L6 22zM5 3v6M2 6h6m10 9v6m-3-3h6", bolt: "m13 2-9 12h7l-1 8 10-13h-8z", phone: "M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm3 17h4", eye: "M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zm7 0a3 3 0 1 0 6 0 3 3 0 0 0-6 0", check: "m5 12 4 4L19 6", play: "m8 4 12 8-12 8z" };

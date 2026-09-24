@@ -151,6 +151,7 @@ label .hint { font-weight: 400; }
 .editor-actions { display: flex; gap: 12px; border-top: 1px solid var(--line); margin-top: 24px; padding-top: 24px; }
 .editor-actions .button { flex: 1; }
 .editor-actions + .hint { margin: 16px 0 0; }
+.export-quota { margin: 10px 0 0; color: var(--accent); font-size: .88rem; font-weight: 750; }
 
 @media (max-width: 760px) {
   .site-header, .page-container, .site-footer { width: calc(100% - 32px); }

@@ -12,6 +12,24 @@ import { DEFAULT_BACKGROUND, DEFAULT_ICON, EXPORT_READY_MESSAGE, INITIAL_CLOCK, 
 const ASSET_BUCKET = "notivy-assets";
 const MAX_ASSET_SIZE = 5 * 1024 * 1024;
 const ALLOWED_ASSET_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
+const FREE_EXPORT_LIMIT = 1;
+
+const INITIAL_EXPORT_QUOTA = {
+  isLoading: true,
+  isAuthenticated: false,
+  usedCount: 0,
+  monthlyLimit: FREE_EXPORT_LIMIT,
+  resetsAt: null,
+};
+
+function formatResetDate(value) {
+  if (!value) return "o início do próximo mês";
+  return new Intl.DateTimeFormat("pt-BR", {
+    day: "numeric",
+    month: "long",
+    timeZone: "America/Sao_Paulo",
+  }).format(new Date(value));
+}
 
 function validateAsset(file) {
   if (!ALLOWED_ASSET_TYPES.has(file.type)) return "Use uma imagem PNG, JPEG ou WebP.";
@@ -38,10 +56,50 @@ export default function EditorPage() {
   const [projectId, setProjectId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("Entre na sua conta para salvar este print.");
+  const [exportQuota, setExportQuota] = useState(INITIAL_EXPORT_QUOTA);
 
   useEffect(() => () => { if (customBackgroundUrl) URL.revokeObjectURL(customBackgroundUrl); }, [customBackgroundUrl]);
   useEffect(() => () => { if (customIconUrl) URL.revokeObjectURL(customIconUrl); }, [customIconUrl]);
   useEffect(() => () => { if (downloadFile?.url) URL.revokeObjectURL(downloadFile.url); }, [downloadFile]);
+  useEffect(() => {
+    let isActive = true;
+    const supabase = getSupabaseBrowserClient();
+
+    const refreshExportQuota = async (user) => {
+      if (!user) {
+        if (isActive) setExportQuota({ ...INITIAL_EXPORT_QUOTA, isLoading: false });
+        return;
+      }
+
+      if (isActive) setExportQuota((current) => ({ ...current, isLoading: true, isAuthenticated: true }));
+      const { data, error } = await supabase.rpc("get_monthly_export_status").single();
+      if (!isActive) return;
+
+      if (error || !data) {
+        setExportQuota({ ...INITIAL_EXPORT_QUOTA, isLoading: false, isAuthenticated: true, hasError: true });
+        return;
+      }
+
+      setExportQuota({
+        isLoading: false,
+        isAuthenticated: true,
+        usedCount: data.used_count,
+        monthlyLimit: data.monthly_limit,
+        resetsAt: data.resets_at,
+        hasError: false,
+      });
+    };
+
+    supabase.auth.getUser().then(({ data }) => refreshExportQuota(data.user));
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setTimeout(() => refreshExportQuota(session?.user ?? null), 0);
+    });
+
+    return () => {
+      isActive = false;
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
     const requestedProjectId = new URL(window.location.href).searchParams.get("project");
@@ -208,9 +266,46 @@ export default function EditorPage() {
     exportInProgress.current = true;
     setIsExporting(true);
     setDownloadFile(null);
-    setExportMessage("Preparando a imagem...");
+    const supabase = getSupabaseBrowserClient();
     try {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData.user) {
+        setExportQuota({ ...INITIAL_EXPORT_QUOTA, isLoading: false });
+        setExportMessage("Entre na sua conta gratuita para usar 1 exportação por mês.");
+        return;
+      }
+
+      if (exportQuota.usedCount >= exportQuota.monthlyLimit) {
+        setExportMessage(`Seu limite deste mês já foi usado. Nova exportação em ${formatResetDate(exportQuota.resetsAt)}.`);
+        return;
+      }
+
+      setExportMessage("Preparando a imagem...");
       const blob = await exportPreviewPng(previewRef.current);
+      setExportMessage("Confirmando sua exportação mensal...");
+      const { data: claim, error: claimError } = await supabase
+        .rpc("claim_monthly_export", { p_project_id: projectId })
+        .single();
+
+      if (claimError || !claim) {
+        setExportMessage("Não foi possível confirmar sua cota mensal. Tente novamente.");
+        return;
+      }
+
+      setExportQuota({
+        isLoading: false,
+        isAuthenticated: true,
+        usedCount: claim.used_count,
+        monthlyLimit: claim.monthly_limit,
+        resetsAt: claim.resets_at,
+        hasError: false,
+      });
+
+      if (!claim.allowed) {
+        setExportMessage(`Seu limite deste mês já foi usado. Nova exportação em ${formatResetDate(claim.resets_at)}.`);
+        return;
+      }
+
       const filename = `notivy-${Date.now()}.png`;
       const url = URL.createObjectURL(blob);
       const file = new File([blob], filename, { type: "image/png" });
@@ -257,6 +352,7 @@ export default function EditorPage() {
         selectBuiltInIcon={selectBuiltInIcon} chooseIcon={chooseIcon} chooseBackground={chooseBackground}
         resetEditor={resetEditor} downloadPng={downloadPng} isExporting={isExporting}
         exportMessage={exportMessage} downloadFile={downloadFile} sharePng={sharePng}
+        exportQuota={exportQuota} formatResetDate={formatResetDate}
         saveProject={saveProject} isSaving={isSaving} saveMessage={saveMessage}
       />
     </div>

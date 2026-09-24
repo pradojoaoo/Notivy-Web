@@ -13,13 +13,13 @@ O **layout do MVP está pronto** e publicado para revisão:
 | Área | Estado |
 | --- | --- |
 | Landing `/` | Layout final com posicionamento comercial, recursos, demonstrações, planos e FAQ. |
-| Editor `/editor` | Funcional sem conta, com edição em tempo real e exportação PNG. |
+| Editor `/editor` | Edição em tempo real sem conta; exportação PNG exige conta e respeita a cota mensal. |
 | Painel `/painel` | Lista, abre, duplica e exclui os prints do usuário. |
 | Acesso `/entrar` | Cadastro, login, recuperação de senha, sessão e logout conectados ao Supabase Auth. |
 | Planos `/assinar` | Fluxo demonstrativo; não realiza cobrança ou ativação. |
 | Hospedagem | Publicação privada ativa pelo Sites, gerada a partir do build estático em `out/`. |
 
-Na versão publicada, autenticação, persistência dos prints e armazenamento privado de imagens estão ativos. Cobrança e limites reais ainda não estão ativos nesse endereço.
+Na versão publicada, autenticação, persistência dos prints e armazenamento privado de imagens estão ativos. O FREE possui limite real de 1 exportação mensal por conta; a cobrança do PRO ainda não está ativa.
 
 ### Etapa atual do MVP
 
@@ -33,7 +33,8 @@ O código local já iniciou a evolução além da versão publicada:
 - logos e wallpapers enviados são armazenados em um bucket privado, com acesso limitado ao proprietário;
 - prints podem ser duplicados com suas imagens ou excluídos com a limpeza dos arquivos associados;
 - recuperação de senha por link seguro enviado pelo Supabase Auth;
-- cobrança e limite mensal de exportações continuam desativados.
+- limite de 1 exportação mensal do FREE controlado de forma atômica pelo PostgreSQL;
+- cobrança e assinatura PRO continuam desativadas.
 
 ## Proposta da marca
 
@@ -91,6 +92,8 @@ O arquivo final:
 
 O primeiro clique inicia o download. Depois da geração, o editor também mantém um link de abertura e oferece compartilhamento quando o navegador permite.
 
+Para exportar, o usuário precisa estar autenticado. O banco registra somente a primeira exportação concluída de cada mês, considerando o fuso de São Paulo. A chave única `(user_id, month_start)` impede que cliques simultâneos ultrapassem o limite. O PNG é gerado antes dessa confirmação, portanto uma falha de captura não consome a cota.
+
 ## Planos apresentados no MVP
 
 | Plano | Proposta |
@@ -98,7 +101,7 @@ O primeiro clique inicia o download. Depois da geração, o editor também mant�
 | FREE | 1 exportação por mês por conta. |
 | PRO | Exportações ilimitadas por R$19,90/mês. |
 
-Os planos ainda são demonstrativos. O editor não aplica limites e não processa pagamentos nesta etapa.
+O limite do FREE já está ativo. O PRO permanece demonstrativo e nenhum pagamento é processado nesta etapa.
 
 ## Tecnologia
 
@@ -166,7 +169,7 @@ npm.cmd run dev
 
 ## Validações realizadas
 
-- Build estático completo das seis rotas.
+- Build estático completo das sete rotas.
 - Lint do projeto.
 - Exportação desktop e mobile em 1080 × 1920 px.
 - Exportação com textos longos, posição livre e uploads personalizados.
@@ -176,8 +179,8 @@ npm.cmd run dev
 
 ## Próximas etapas de produto
 
-1. Aplicar o limite real de 1 exportação mensal no FREE.
-2. Integrar cobrança e assinatura do PRO.
-3. Revisar licenças e autorizações de uso das marcas antes do lançamento comercial.
+1. Integrar cobrança e assinatura do PRO, após escolher uma solução com custo adequado ao MVP.
+2. Revisar licenças e autorizações de uso das marcas antes do lançamento comercial.
+3. Adicionar testes automatizados para autenticação, persistência e cotas de exportação.
 
 O código atual representa o MVP visual e funcional do editor, com o **layout pronto** para a próxima etapa de implementação do produto.

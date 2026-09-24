@@ -15,7 +15,7 @@ O **layout do MVP está pronto** e publicado para revisão:
 | Landing `/` | Layout final com posicionamento comercial, recursos, demonstrações, planos e FAQ. |
 | Editor `/editor` | Funcional sem conta, com edição em tempo real e exportação PNG. |
 | Painel `/painel` | Lista, abre, duplica e exclui os prints do usuário. |
-| Acesso `/entrar` | Cadastro, login, sessão e logout conectados ao Supabase Auth. |
+| Acesso `/entrar` | Cadastro, login, recuperação de senha, sessão e logout conectados ao Supabase Auth. |
 | Planos `/assinar` | Fluxo demonstrativo; não realiza cobrança ou ativação. |
 | Hospedagem | Publicação privada ativa pelo Sites, gerada a partir do build estático em `out/`. |
 
@@ -32,6 +32,7 @@ O código local já iniciou a evolução além da versão publicada:
 - editor preparado para salvar e reabrir configurações;
 - logos e wallpapers enviados são armazenados em um bucket privado, com acesso limitado ao proprietário;
 - prints podem ser duplicados com suas imagens ou excluídos com a limpeza dos arquivos associados;
+- recuperação de senha por link seguro enviado pelo Supabase Auth;
 - cobrança e limite mensal de exportações continuam desativados.
 
 ## Proposta da marca
@@ -175,9 +176,8 @@ npm.cmd run dev
 
 ## Próximas etapas de produto
 
-1. Testar recuperação de senha de ponta a ponta.
-2. Aplicar o limite real de 1 exportação mensal no FREE.
-3. Integrar cobrança e assinatura do PRO.
-4. Revisar licenças e autorizações de uso das marcas antes do lançamento comercial.
+1. Aplicar o limite real de 1 exportação mensal no FREE.
+2. Integrar cobrança e assinatura do PRO.
+3. Revisar licenças e autorizações de uso das marcas antes do lançamento comercial.
 
 O código atual representa o MVP visual e funcional do editor, com o **layout pronto** para a próxima etapa de implementação do produto.

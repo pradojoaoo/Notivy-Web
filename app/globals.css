@@ -99,6 +99,10 @@ fieldset:disabled input, fieldset:disabled textarea { -webkit-text-fill-color: #
 button:disabled, fieldset:disabled button { cursor: not-allowed; opacity: 0.6; }
 label .hint { font-weight: 400; }
 .centered { text-align: center; margin: 14px 0 0; }
+.access-recovery-link { margin: 6px auto 0; }
+.reset-complete { display: grid; gap: 18px; }
+.reset-complete .auth-message { margin-top: 0; }
+.reset-request-link { margin-top: 18px; }
 .auth-message { margin: 16px 0 0; padding: 12px 14px; border: 1px solid var(--line); font-size: 0.82rem; line-height: 1.5; }
 .auth-message-error { border-color: #d25b5b80; background: #d25b5b12; color: #ffb4b4; }
 .auth-message-success { border-color: #63b77b80; background: #63b77b12; color: #bce8c8; }

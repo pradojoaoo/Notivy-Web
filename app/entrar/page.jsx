@@ -17,7 +17,7 @@ function translateAuthError(message) {
 
 export default function AccessPage() {
   const router = useRouter();
-  const [creatingAccount, setCreatingAccount] = useState(false);
+  const [mode, setMode] = useState("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,8 +36,11 @@ export default function AccessPage() {
     return () => authListener.subscription.unsubscribe();
   }, [router]);
 
-  const changeMode = (nextCreatingAccount) => {
-    setCreatingAccount(nextCreatingAccount);
+  const creatingAccount = mode === "signup";
+  const recoveringPassword = mode === "recovery";
+
+  const changeMode = (nextMode) => {
+    setMode(nextMode);
     setMessage("");
   };
 
@@ -47,6 +50,21 @@ export default function AccessPage() {
     setMessage("");
 
     const supabase = getSupabaseBrowserClient();
+    if (recoveringPassword) {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/redefinir-senha/`,
+      });
+      setSubmitting(false);
+      if (error) {
+        setMessageType("error");
+        setMessage(translateAuthError(error.message));
+        return;
+      }
+      setMessageType("success");
+      setMessage("Se existir uma conta com este e-mail, você receberá um link para criar uma nova senha.");
+      return;
+    }
+
     const result = creatingAccount
       ? await supabase.auth.signUp({
           email,
@@ -77,18 +95,20 @@ export default function AccessPage() {
       <div className="access-layout">
         <section className="access-intro"><p className="eyebrow">Área do cliente</p><h1>Seus prints<br /><span>em um só lugar.</span></h1><p className="lead">Crie uma conta gratuita para salvar suas notificações e encontrá-las novamente no painel.</p><Link className="text-link" href="/#planos">Ainda não escolheu um plano? Conheça os planos →</Link></section>
         <section className="panel access-card" aria-labelledby="access-title">
-          <div className="segmented-control" role="group" aria-label="Tipo de acesso"><button type="button" aria-pressed={!creatingAccount} onClick={() => changeMode(false)}>Entrar</button><button type="button" aria-pressed={creatingAccount} onClick={() => changeMode(true)}>Primeiro acesso</button></div>
-          <h2 id="access-title">{creatingAccount ? "Crie seu espaço" : "Bom ter você de volta"}</h2>
-          <p className="hint" id="access-note">{creatingAccount ? "O cadastro gratuito usa e-mail e senha." : "Entre para acessar os prints vinculados à sua conta."}</p>
+          {!recoveringPassword && <div className="segmented-control" role="group" aria-label="Tipo de acesso"><button type="button" aria-pressed={mode === "login"} onClick={() => changeMode("login")}>Entrar</button><button type="button" aria-pressed={creatingAccount} onClick={() => changeMode("signup")}>Primeiro acesso</button></div>}
+          <h2 id="access-title">{recoveringPassword ? "Recupere seu acesso" : creatingAccount ? "Crie seu espaço" : "Bom ter você de volta"}</h2>
+          <p className="hint" id="access-note">{recoveringPassword ? "Informe seu e-mail para receber um link seguro de redefinição." : creatingAccount ? "O cadastro gratuito usa e-mail e senha." : "Entre para acessar os prints vinculados à sua conta."}</p>
           <form onSubmit={submitAccess}>
             <fieldset disabled={submitting} aria-describedby="access-note access-message">
-              <legend className="sr-only">Campos para {creatingAccount ? "cadastro" : "login"}</legend>
+              <legend className="sr-only">Campos para {recoveringPassword ? "recuperação de senha" : creatingAccount ? "cadastro" : "login"}</legend>
               {creatingAccount && <label>Nome<input type="text" value={name} onChange={(event) => setName(event.target.value)} placeholder="Seu nome" autoComplete="name" required /></label>}
               <label>E-mail<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="voce@exemplo.com" autoComplete="email" required /></label>
-              <label>Senha<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Mínimo de 8 caracteres" autoComplete={creatingAccount ? "new-password" : "current-password"} minLength={8} required /></label>
+              {!recoveringPassword && <label>Senha<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Mínimo de 8 caracteres" autoComplete={creatingAccount ? "new-password" : "current-password"} minLength={8} required /></label>}
             </fieldset>
-            <button className="button button-primary button-wide" type="submit" disabled={submitting}>{submitting ? "Aguarde..." : creatingAccount ? "Criar conta gratuita" : "Entrar"} <span aria-hidden="true">→</span></button>
+            <button className="button button-primary button-wide" type="submit" disabled={submitting}>{submitting ? "Aguarde..." : recoveringPassword ? "Enviar link seguro" : creatingAccount ? "Criar conta gratuita" : "Entrar"} <span aria-hidden="true">→</span></button>
           </form>
+          {mode === "login" && <button className="text-link access-recovery-link" type="button" onClick={() => changeMode("recovery")}>Esqueci minha senha</button>}
+          {recoveringPassword && <button className="text-link access-recovery-link" type="button" onClick={() => changeMode("login")}>← Voltar para entrar</button>}
           {message && <p className={`auth-message auth-message-${messageType}`} id="access-message" role={messageType === "error" ? "alert" : "status"}>{message}</p>}
           <p className="hint centered">A criação da conta não ativa cobrança.</p>
         </section>

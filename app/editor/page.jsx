@@ -9,6 +9,16 @@ import { getSupabaseBrowserClient } from "../_lib/supabase-client";
 import EditorControls from "./_components/editor-controls";
 import { DEFAULT_BACKGROUND, DEFAULT_ICON, EXPORT_READY_MESSAGE, INITIAL_CLOCK, INITIAL_VALUES } from "./_lib/editor-config";
 
+const ASSET_BUCKET = "notivy-assets";
+const MAX_ASSET_SIZE = 5 * 1024 * 1024;
+const ALLOWED_ASSET_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
+
+function validateAsset(file) {
+  if (!ALLOWED_ASSET_TYPES.has(file.type)) return "Use uma imagem PNG, JPEG ou WebP.";
+  if (file.size > MAX_ASSET_SIZE) return "A imagem deve ter no máximo 5 MB.";
+  return "";
+}
+
 export default function EditorPage() {
   const previewRef = useRef(null);
   const exportInProgress = useRef(false);
@@ -17,8 +27,12 @@ export default function EditorPage() {
   const [clock, setClock] = useState(INITIAL_CLOCK);
   const [backgroundUrl, setBackgroundUrl] = useState(DEFAULT_BACKGROUND);
   const [customBackgroundUrl, setCustomBackgroundUrl] = useState("");
+  const [backgroundFile, setBackgroundFile] = useState(null);
+  const [backgroundStoragePath, setBackgroundStoragePath] = useState(null);
   const [appIcon, setAppIcon] = useState(DEFAULT_ICON);
   const [customIconUrl, setCustomIconUrl] = useState("");
+  const [iconFile, setIconFile] = useState(null);
+  const [iconStoragePath, setIconStoragePath] = useState(null);
   const [exportMessage, setExportMessage] = useState(EXPORT_READY_MESSAGE);
   const [downloadFile, setDownloadFile] = useState(null);
   const [projectId, setProjectId] = useState(null);
@@ -29,12 +43,20 @@ export default function EditorPage() {
   useEffect(() => () => { if (customIconUrl) URL.revokeObjectURL(customIconUrl); }, [customIconUrl]);
   useEffect(() => () => { if (downloadFile?.url) URL.revokeObjectURL(downloadFile.url); }, [downloadFile]);
   useEffect(() => {
+    const supabase = getSupabaseBrowserClient();
     const requestedProjectId = new URL(window.location.href).searchParams.get("project");
-    if (!requestedProjectId) return;
+    if (!requestedProjectId) {
+      supabase.auth.getSession().then(({ data }) => {
+        setSaveMessage(data.session
+          ? "Salve este print para encontrá-lo novamente no painel."
+          : "Entre na sua conta para salvar este print.");
+      });
+      return;
+    }
 
     const loadProject = async () => {
       setSaveMessage("Carregando o print salvo...");
-      const { data, error } = await getSupabaseBrowserClient()
+      const { data, error } = await supabase
         .from("notification_projects")
         .select("id, editor_state")
         .eq("id", requestedProjectId)
@@ -50,8 +72,27 @@ export default function EditorPage() {
       setClock({ ...INITIAL_CLOCK, ...(saved.clock ?? {}) });
       setBackgroundUrl(saved.backgroundUrl || DEFAULT_BACKGROUND);
       setAppIcon(saved.appIcon || DEFAULT_ICON);
+      setBackgroundStoragePath(saved.backgroundStoragePath ?? null);
+      setIconStoragePath(saved.appIconStoragePath ?? null);
       setProjectId(data.id);
-      setSaveMessage("Print carregado. Suas próximas alterações podem ser salvas.");
+
+      const restoreAsset = async (path, setCustomUrl, setDisplayedUrl) => {
+        if (!path) return true;
+        const { data: fileBlob, error: downloadError } = await supabase.storage.from(ASSET_BUCKET).download(path);
+        if (downloadError || !fileBlob) return false;
+        const localUrl = URL.createObjectURL(fileBlob);
+        setCustomUrl(localUrl);
+        setDisplayedUrl(localUrl);
+        return true;
+      };
+
+      const restored = await Promise.all([
+        restoreAsset(saved.backgroundStoragePath, setCustomBackgroundUrl, setBackgroundUrl),
+        restoreAsset(saved.appIconStoragePath, setCustomIconUrl, setAppIcon),
+      ]);
+      setSaveMessage(restored.every(Boolean)
+        ? "Print e imagens carregados. Suas próximas alterações podem ser salvas."
+        : "Print carregado, mas uma imagem privada não pôde ser recuperada.");
     };
 
     loadProject();
@@ -59,9 +100,27 @@ export default function EditorPage() {
 
   const updateValue = (field) => (event) => setValues((current) => ({ ...current, [field]: event.target.value }));
   const updateClock = (field) => (event) => setClock((current) => ({ ...current, [field]: event.target.value }));
-  const chooseBackground = (event) => { const file = event.target.files?.[0]; if (!file) return; const nextUrl = URL.createObjectURL(file); setCustomBackgroundUrl(nextUrl); setBackgroundUrl(nextUrl); };
-  const chooseIcon = (event) => { const file = event.target.files?.[0]; if (!file) return; const nextUrl = URL.createObjectURL(file); setCustomIconUrl(nextUrl); setAppIcon(nextUrl); };
+  const chooseBackground = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const validationError = validateAsset(file);
+    if (validationError) { event.target.value = ""; setSaveMessage(validationError); return; }
+    const nextUrl = URL.createObjectURL(file);
+    setBackgroundFile(file); setCustomBackgroundUrl(nextUrl); setBackgroundUrl(nextUrl);
+    setSaveMessage("Wallpaper pronto para ser enviado quando você salvar o print.");
+  };
+  const chooseIcon = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const validationError = validateAsset(file);
+    if (validationError) { event.target.value = ""; setSaveMessage(validationError); return; }
+    const nextUrl = URL.createObjectURL(file);
+    setIconFile(file); setCustomIconUrl(nextUrl); setAppIcon(nextUrl);
+    setSaveMessage("Logo pronto para ser enviado quando você salvar o print.");
+  };
   const selectBuiltInIcon = (icon) => {
+    setIconFile(null);
+    setIconStoragePath(null);
     setCustomIconUrl("");
     setAppIcon(icon.src);
     setValues((current) => ({ ...current, appName: icon.name }));
@@ -69,8 +128,8 @@ export default function EditorPage() {
   const setFreePosition = ({ x, y }) => setValues((current) => ({ ...current, notificationPosition: "free", notificationX: x, notificationY: y }));
 
   const resetEditor = () => {
-    setValues(INITIAL_VALUES); setClock(INITIAL_CLOCK); setBackgroundUrl(DEFAULT_BACKGROUND); setCustomBackgroundUrl("");
-    setAppIcon(DEFAULT_ICON); setCustomIconUrl(""); setDownloadFile(null); setExportMessage(EXPORT_READY_MESSAGE);
+    setValues(INITIAL_VALUES); setClock(INITIAL_CLOCK); setBackgroundUrl(DEFAULT_BACKGROUND); setCustomBackgroundUrl(""); setBackgroundFile(null); setBackgroundStoragePath(null);
+    setAppIcon(DEFAULT_ICON); setCustomIconUrl(""); setIconFile(null); setIconStoragePath(null); setDownloadFile(null); setExportMessage(EXPORT_READY_MESSAGE);
   };
 
   const saveProject = async () => {
@@ -85,12 +144,38 @@ export default function EditorPage() {
       return;
     }
 
-    const hasTemporaryImages = backgroundUrl.startsWith("blob:") || appIcon.startsWith("blob:");
+    const nextProjectId = projectId ?? crypto.randomUUID();
+    const uploadAsset = async (file, assetType) => {
+      const path = `${userData.user.id}/${nextProjectId}/${assetType}`;
+      const { error } = await supabase.storage.from(ASSET_BUCKET).upload(path, file, {
+        cacheControl: "3600",
+        contentType: file.type,
+        upsert: true,
+      });
+      if (error) throw error;
+      return path;
+    };
+
+    let nextBackgroundStoragePath = backgroundStoragePath;
+    let nextIconStoragePath = iconStoragePath;
+    try {
+      [nextBackgroundStoragePath, nextIconStoragePath] = await Promise.all([
+        backgroundFile ? uploadAsset(backgroundFile, "background") : Promise.resolve(backgroundStoragePath),
+        iconFile ? uploadAsset(iconFile, "icon") : Promise.resolve(iconStoragePath),
+      ]);
+    } catch {
+      setIsSaving(false);
+      setSaveMessage("Não foi possível enviar uma das imagens. Confira o formato e tente novamente.");
+      return;
+    }
+
     const editorState = {
       values,
       clock,
-      backgroundUrl: backgroundUrl.startsWith("blob:") ? DEFAULT_BACKGROUND : backgroundUrl,
-      appIcon: appIcon.startsWith("blob:") ? DEFAULT_ICON : appIcon,
+      backgroundUrl: (nextBackgroundStoragePath || backgroundUrl.startsWith("blob:")) ? DEFAULT_BACKGROUND : backgroundUrl,
+      appIcon: (nextIconStoragePath || appIcon.startsWith("blob:")) ? DEFAULT_ICON : appIcon,
+      backgroundStoragePath: nextBackgroundStoragePath,
+      appIconStoragePath: nextIconStoragePath,
     };
     const projectName = values.title.trim().slice(0, 120) || "Print sem título";
     const projectData = {
@@ -101,7 +186,7 @@ export default function EditorPage() {
 
     const result = projectId
       ? await supabase.from("notification_projects").update(projectData).eq("id", projectId).select("id").single()
-      : await supabase.from("notification_projects").insert({ ...projectData, user_id: userData.user.id }).select("id").single();
+      : await supabase.from("notification_projects").insert({ id: nextProjectId, ...projectData, user_id: userData.user.id }).select("id").single();
 
     setIsSaving(false);
     if (result.error) {
@@ -109,11 +194,13 @@ export default function EditorPage() {
       return;
     }
 
+    setBackgroundStoragePath(nextBackgroundStoragePath);
+    setIconStoragePath(nextIconStoragePath);
+    setBackgroundFile(null);
+    setIconFile(null);
     setProjectId(result.data.id);
     window.history.replaceState(null, "", `/editor/?project=${result.data.id}`);
-    setSaveMessage(hasTemporaryImages
-      ? "Configurações salvas. Imagens enviadas do aparelho ainda não são armazenadas."
-      : "Print salvo no seu painel.");
+    setSaveMessage("Print e imagens salvos no seu painel.");
   };
 
   const downloadPng = async () => {

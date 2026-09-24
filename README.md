@@ -30,7 +30,7 @@ O código local já iniciou a evolução além da versão publicada:
 - tabela `notification_projects` criada com Row Level Security (RLS);
 - painel conectado aos projetos do usuário autenticado;
 - editor preparado para salvar e reabrir configurações;
-- imagens enviadas pelo usuário ainda não são persistidas;
+- logos e wallpapers enviados são armazenados em um bucket privado, com acesso limitado ao proprietário;
 - cobrança e limite mensal de exportações continuam desativados.
 
 Essas alterações ainda precisam de um teste completo com uma conta confirmada antes de uma nova publicação.
@@ -56,7 +56,7 @@ Essas alterações ainda precisam de um teste completo com uma conta confirmada 
 - Download direto e compartilhamento em celulares compatíveis.
 - Restauração rápida do exemplo inicial.
 
-Os uploads permanecem somente na sessão do navegador e não são enviados para um servidor pelo editor.
+Os uploads permanecem somente na sessão enquanto o print não é salvo. Para usuários autenticados, a ação **Salvar no painel** envia logos e wallpapers a um bucket privado do Supabase Storage. Cada conta acessa somente sua própria pasta.
 
 ## Logos disponíveis
 
@@ -176,11 +176,10 @@ npm.cmd run dev
 
 ## Próximas etapas de produto
 
-1. Testar cadastro, confirmação de e-mail, login e recuperação de senha de ponta a ponta.
-2. Persistir logos e wallpapers personalizados no Supabase Storage.
-3. Adicionar duplicação e exclusão de prints no painel.
-4. Aplicar o limite real de 1 exportação mensal no FREE.
-5. Integrar cobrança e assinatura do PRO.
-6. Revisar licenças e autorizações de uso das marcas antes do lançamento comercial.
+1. Testar recuperação de senha de ponta a ponta.
+2. Adicionar duplicação e exclusão de prints, incluindo a limpeza dos arquivos associados.
+3. Aplicar o limite real de 1 exportação mensal no FREE.
+4. Integrar cobrança e assinatura do PRO.
+5. Revisar licenças e autorizações de uso das marcas antes do lançamento comercial.
 
 O código atual representa o MVP visual e funcional do editor, com o **layout pronto** para a próxima etapa de implementação do produto.

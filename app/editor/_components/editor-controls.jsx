@@ -18,17 +18,14 @@ export default function EditorControls({
   downloadFile,
   sharePng,
   exportQuota,
-  formatResetDate,
+  showUpgradeOffer,
   saveProject,
   isSaving,
   saveMessage,
 }) {
-  const exportLimitReached = exportQuota.isAuthenticated
-    && exportQuota.usedCount >= exportQuota.monthlyLimit;
   let quotaMessage = "Crie uma conta gratuitamente para exportar.";
   if (exportQuota.isLoading) quotaMessage = "Consultando sua exportação mensal...";
   else if (exportQuota.hasError) quotaMessage = "Não foi possível consultar sua cota agora.";
-  else if (exportLimitReached) quotaMessage = `Limite mensal usado. Nova exportação em ${formatResetDate(exportQuota.resetsAt)}.`;
   else if (exportQuota.isAuthenticated) quotaMessage = "Tudo pronto para exportar seu PNG.";
 
   return (
@@ -79,11 +76,11 @@ export default function EditorControls({
       <div className="editor-actions">
         <button className="button button-secondary" type="button" onClick={resetEditor}>Restaurar exemplo</button>
         <button className="button button-secondary" type="button" disabled={isSaving} onClick={saveProject}>{isSaving ? "Salvando..." : "Salvar no painel"}</button>
-        <button className="button button-primary" type="button" disabled={isExporting || exportLimitReached} onClick={downloadPng}>{isExporting ? "Preparando PNG..." : exportLimitReached ? "Limite mensal atingido" : "Baixar PNG"}</button>
+        <button className="button button-primary" type="button" disabled={isExporting} onClick={downloadPng}>{isExporting ? "Preparando PNG..." : "Baixar PNG"}</button>
       </div>
       <p className="hint" id="save-note" aria-live="polite">{saveMessage}</p>
       <p className="export-quota" aria-live="polite">{quotaMessage}</p>
-      {exportLimitReached && <Link className="text-link export-upgrade-link" href="/assinar/?plano=pro">Conhecer o PRO para exportar mais →</Link>}
+      {showUpgradeOffer && <Link className="text-link export-upgrade-link" href="/assinar/?plano=pro">Conhecer o PRO para exportar mais →</Link>}
       <p className="hint" id="export-note" aria-live="polite">{exportMessage}</p>
       {downloadFile && <div className="export-ready-actions">
         <a className="text-link export-fallback" href={downloadFile.url} download={downloadFile.filename}>Baixar ou abrir o PNG →</a>

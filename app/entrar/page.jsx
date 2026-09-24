@@ -38,8 +38,10 @@ export default function AccessPage() {
     const nextPath = safeReturnPath(params.get("next"));
     const shouldExport = params.get("intent") === "export";
     returnPath.current = nextPath;
-    setExportIntent(shouldExport);
-    if (shouldExport) setMode("signup");
+    const displayTimer = setTimeout(() => {
+      setExportIntent(shouldExport);
+      if (shouldExport) setMode("signup");
+    }, 0);
 
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) router.replace(nextPath);
@@ -47,7 +49,10 @@ export default function AccessPage() {
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) router.replace(returnPath.current);
     });
-    return () => authListener.subscription.unsubscribe();
+    return () => {
+      clearTimeout(displayTimer);
+      authListener.subscription.unsubscribe();
+    };
   }, [router]);
 
   const creatingAccount = mode === "signup";

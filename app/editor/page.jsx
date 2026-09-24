@@ -60,6 +60,7 @@ export default function EditorPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("Entre na sua conta para salvar este print.");
   const [exportQuota, setExportQuota] = useState(INITIAL_EXPORT_QUOTA);
+  const [showUpgradeOffer, setShowUpgradeOffer] = useState(false);
 
   useEffect(() => () => { if (customBackgroundUrl) URL.revokeObjectURL(customBackgroundUrl); }, [customBackgroundUrl]);
   useEffect(() => () => { if (customIconUrl) URL.revokeObjectURL(customIconUrl); }, [customIconUrl]);
@@ -329,8 +330,29 @@ export default function EditorPage() {
       }
 
       if (exportQuota.usedCount >= exportQuota.monthlyLimit) {
-        setExportMessage(`Seu limite deste mês já foi usado. Nova exportação em ${formatResetDate(exportQuota.resetsAt)}.`);
-        return;
+        const { data: currentQuota, error: quotaError } = await supabase
+          .rpc("get_monthly_export_status")
+          .single();
+
+        if (quotaError || !currentQuota) {
+          setExportMessage("Não foi possível consultar sua cota agora. Tente novamente.");
+          return;
+        }
+
+        setExportQuota({
+          isLoading: false,
+          isAuthenticated: true,
+          usedCount: currentQuota.used_count,
+          monthlyLimit: currentQuota.monthly_limit,
+          resetsAt: currentQuota.resets_at,
+          hasError: false,
+        });
+
+        if (currentQuota.used_count >= currentQuota.monthly_limit) {
+          setShowUpgradeOffer(true);
+          setExportMessage(`Seu limite deste mês já foi usado. Nova exportação em ${formatResetDate(currentQuota.resets_at)}.`);
+          return;
+        }
       }
 
       setExportMessage("Preparando a imagem...");
@@ -355,6 +377,7 @@ export default function EditorPage() {
       });
 
       if (!claim.allowed) {
+        setShowUpgradeOffer(true);
         setExportMessage(`Seu limite deste mês já foi usado. Nova exportação em ${formatResetDate(claim.resets_at)}.`);
         return;
       }
@@ -374,6 +397,7 @@ export default function EditorPage() {
       document.body.appendChild(link);
       link.click();
       link.remove();
+      setShowUpgradeOffer(false);
       removeExportDraft().catch(() => {});
       setExportMessage("PNG pronto em 1080 × 1920 px. Se o download não abrir, use o link abaixo.");
     } catch { setExportMessage("Não foi possível gerar a imagem. Tente novamente."); }
@@ -406,7 +430,8 @@ export default function EditorPage() {
         selectBuiltInIcon={selectBuiltInIcon} chooseIcon={chooseIcon} chooseBackground={chooseBackground}
         resetEditor={resetEditor} downloadPng={downloadPng} isExporting={isExporting}
         exportMessage={exportMessage} downloadFile={downloadFile} sharePng={sharePng}
-        exportQuota={exportQuota} formatResetDate={formatResetDate}
+        exportQuota={exportQuota}
+        showUpgradeOffer={showUpgradeOffer}
         saveProject={saveProject} isSaving={isSaving} saveMessage={saveMessage}
       />
     </div>

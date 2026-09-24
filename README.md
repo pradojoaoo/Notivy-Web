@@ -101,7 +101,7 @@ Para exportar, o usuário precisa estar autenticado. Quando alguém sem conta te
 | FREE | 1 exportação por mês por conta. |
 | PRO | Exportações ilimitadas por R$19,90/mês. |
 
-O limite do FREE já está ativo. O cadastro não exige escolha de plano: a oferta do PRO aparece no editor somente depois que a cota gratuita é utilizada. O PRO permanece demonstrativo e nenhum pagamento é processado nesta etapa.
+O limite do FREE já está ativo. O cadastro não exige escolha de plano e o editor não antecipa o limite. A data da próxima liberação e a oferta do PRO aparecem somente quando alguém que já exportou tenta baixar outro PNG no mesmo mês. O PRO permanece demonstrativo e nenhum pagamento é processado nesta etapa.
 
 ## Tecnologia
 

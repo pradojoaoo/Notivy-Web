@@ -19,7 +19,21 @@ O **layout do MVP está pronto** e publicado para revisão:
 | Planos `/assinar` | Fluxo demonstrativo; não realiza cobrança ou ativação. |
 | Hospedagem | Publicação privada ativa pelo Sites, gerada a partir do build estático em `out/`. |
 
-As páginas de conta, painel e assinatura representam o fluxo planejado. Autenticação, persistência, cobrança e limites reais ainda não foram implementados.
+Na versão publicada, as páginas de conta, painel e assinatura representam o fluxo planejado. Autenticação, persistência, cobrança e limites reais ainda não estão ativos nesse endereço.
+
+### Etapa 5 em desenvolvimento local
+
+O código local já iniciou a evolução além da versão publicada:
+
+- projeto gratuito do Supabase criado na região de São Paulo;
+- cadastro, login, sessão e logout conectados ao Supabase Auth;
+- tabela `notification_projects` criada com Row Level Security (RLS);
+- painel conectado aos projetos do usuário autenticado;
+- editor preparado para salvar e reabrir configurações;
+- imagens enviadas pelo usuário ainda não são persistidas;
+- cobrança e limite mensal de exportações continuam desativados.
+
+Essas alterações ainda precisam de um teste completo com uma conta confirmada antes de uma nova publicação.
 
 ## Proposta da marca
 
@@ -90,6 +104,7 @@ Os planos ainda são demonstrativos. O editor não aplica limites e não process
 
 - Next.js 16 com App Router
 - React 19
+- Supabase Auth e PostgreSQL
 - `modern-screenshot` 4.7
 - Canvas do navegador para a composição final da notificação
 - ESLint 9
@@ -161,11 +176,11 @@ npm.cmd run dev
 
 ## Próximas etapas de produto
 
-1. Implementar cadastro, login e sessões.
-2. Salvar, duplicar e excluir prints no painel.
-3. Aplicar o limite real de 1 exportação mensal no FREE.
-4. Integrar cobrança e assinatura do PRO.
-5. Armazenar arquivos quando houver contas e persistência.
+1. Testar cadastro, confirmação de e-mail, login e recuperação de senha de ponta a ponta.
+2. Persistir logos e wallpapers personalizados no Supabase Storage.
+3. Adicionar duplicação e exclusão de prints no painel.
+4. Aplicar o limite real de 1 exportação mensal no FREE.
+5. Integrar cobrança e assinatura do PRO.
 6. Revisar licenças e autorizações de uso das marcas antes do lançamento comercial.
 
 O código atual representa o MVP visual e funcional do editor, com o **layout pronto** para a próxima etapa de implementação do produto.

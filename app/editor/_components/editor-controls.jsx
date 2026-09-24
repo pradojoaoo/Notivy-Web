@@ -16,9 +16,12 @@ export default function EditorControls({
   exportMessage,
   downloadFile,
   sharePng,
+  saveProject,
+  isSaving,
+  saveMessage,
 }) {
   return (
-    <section className="panel editor-panel" aria-labelledby="fields-title" inert={isExporting}>
+    <section className="panel editor-panel" aria-labelledby="fields-title" inert={isExporting || isSaving}>
       <h2 id="fields-title">Personalize seu print</h2>
 
       <fieldset>
@@ -64,8 +67,10 @@ export default function EditorControls({
 
       <div className="editor-actions">
         <button className="button button-secondary" type="button" onClick={resetEditor}>Restaurar exemplo</button>
+        <button className="button button-secondary" type="button" disabled={isSaving} onClick={saveProject}>{isSaving ? "Salvando..." : "Salvar no painel"}</button>
         <button className="button button-primary" type="button" disabled={isExporting} onClick={downloadPng}>{isExporting ? "Preparando PNG..." : "Baixar PNG"}</button>
       </div>
+      <p className="hint" id="save-note" aria-live="polite">{saveMessage}</p>
       <p className="hint" id="export-note" aria-live="polite">{exportMessage}</p>
       {downloadFile && <div className="export-ready-actions">
         <a className="text-link export-fallback" href={downloadFile.url} download={downloadFile.filename}>Baixar ou abrir o PNG →</a>

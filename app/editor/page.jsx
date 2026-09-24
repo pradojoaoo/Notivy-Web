@@ -5,6 +5,7 @@ import Link from "next/link";
 import PrototypeShell from "../_components/prototype-shell";
 import NotificationPreview from "../_components/notification-preview";
 import { exportPreviewPng } from "../_lib/export-preview";
+import { getSupabaseBrowserClient } from "../_lib/supabase-client";
 import EditorControls from "./_components/editor-controls";
 import { DEFAULT_BACKGROUND, DEFAULT_ICON, EXPORT_READY_MESSAGE, INITIAL_CLOCK, INITIAL_VALUES } from "./_lib/editor-config";
 
@@ -20,10 +21,41 @@ export default function EditorPage() {
   const [customIconUrl, setCustomIconUrl] = useState("");
   const [exportMessage, setExportMessage] = useState(EXPORT_READY_MESSAGE);
   const [downloadFile, setDownloadFile] = useState(null);
+  const [projectId, setProjectId] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("Entre na sua conta para salvar este print.");
 
   useEffect(() => () => { if (customBackgroundUrl) URL.revokeObjectURL(customBackgroundUrl); }, [customBackgroundUrl]);
   useEffect(() => () => { if (customIconUrl) URL.revokeObjectURL(customIconUrl); }, [customIconUrl]);
   useEffect(() => () => { if (downloadFile?.url) URL.revokeObjectURL(downloadFile.url); }, [downloadFile]);
+  useEffect(() => {
+    const requestedProjectId = new URL(window.location.href).searchParams.get("project");
+    if (!requestedProjectId) return;
+
+    const loadProject = async () => {
+      setSaveMessage("Carregando o print salvo...");
+      const { data, error } = await getSupabaseBrowserClient()
+        .from("notification_projects")
+        .select("id, editor_state")
+        .eq("id", requestedProjectId)
+        .single();
+
+      if (error || !data) {
+        setSaveMessage("Não foi possível abrir este print. Confirme que você entrou na conta correta.");
+        return;
+      }
+
+      const saved = data.editor_state ?? {};
+      setValues({ ...INITIAL_VALUES, ...(saved.values ?? {}) });
+      setClock({ ...INITIAL_CLOCK, ...(saved.clock ?? {}) });
+      setBackgroundUrl(saved.backgroundUrl || DEFAULT_BACKGROUND);
+      setAppIcon(saved.appIcon || DEFAULT_ICON);
+      setProjectId(data.id);
+      setSaveMessage("Print carregado. Suas próximas alterações podem ser salvas.");
+    };
+
+    loadProject();
+  }, []);
 
   const updateValue = (field) => (event) => setValues((current) => ({ ...current, [field]: event.target.value }));
   const updateClock = (field) => (event) => setClock((current) => ({ ...current, [field]: event.target.value }));
@@ -39,6 +71,49 @@ export default function EditorPage() {
   const resetEditor = () => {
     setValues(INITIAL_VALUES); setClock(INITIAL_CLOCK); setBackgroundUrl(DEFAULT_BACKGROUND); setCustomBackgroundUrl("");
     setAppIcon(DEFAULT_ICON); setCustomIconUrl(""); setDownloadFile(null); setExportMessage(EXPORT_READY_MESSAGE);
+  };
+
+  const saveProject = async () => {
+    setIsSaving(true);
+    setSaveMessage("Salvando no seu painel...");
+    const supabase = getSupabaseBrowserClient();
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+
+    if (userError || !userData.user) {
+      setIsSaving(false);
+      setSaveMessage("Entre na sua conta antes de salvar o print.");
+      return;
+    }
+
+    const hasTemporaryImages = backgroundUrl.startsWith("blob:") || appIcon.startsWith("blob:");
+    const editorState = {
+      values,
+      clock,
+      backgroundUrl: backgroundUrl.startsWith("blob:") ? DEFAULT_BACKGROUND : backgroundUrl,
+      appIcon: appIcon.startsWith("blob:") ? DEFAULT_ICON : appIcon,
+    };
+    const projectName = values.title.trim().slice(0, 120) || "Print sem título";
+    const projectData = {
+      name: projectName,
+      editor_state: editorState,
+      updated_at: new Date().toISOString(),
+    };
+
+    const result = projectId
+      ? await supabase.from("notification_projects").update(projectData).eq("id", projectId).select("id").single()
+      : await supabase.from("notification_projects").insert({ ...projectData, user_id: userData.user.id }).select("id").single();
+
+    setIsSaving(false);
+    if (result.error) {
+      setSaveMessage("Não foi possível salvar. Tente novamente.");
+      return;
+    }
+
+    setProjectId(result.data.id);
+    window.history.replaceState(null, "", `/editor/?project=${result.data.id}`);
+    setSaveMessage(hasTemporaryImages
+      ? "Configurações salvas. Imagens enviadas do aparelho ainda não são armazenadas."
+      : "Print salvo no seu painel.");
   };
 
   const downloadPng = async () => {
@@ -95,6 +170,7 @@ export default function EditorPage() {
         selectBuiltInIcon={selectBuiltInIcon} chooseIcon={chooseIcon} chooseBackground={chooseBackground}
         resetEditor={resetEditor} downloadPng={downloadPng} isExporting={isExporting}
         exportMessage={exportMessage} downloadFile={downloadFile} sharePng={sharePng}
+        saveProject={saveProject} isSaving={isSaving} saveMessage={saveMessage}
       />
     </div>
   </PrototypeShell>;

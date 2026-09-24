@@ -1,4 +1,6 @@
-# Fluxo do MVP — etapa 4
+# Fluxo do MVP — etapa 4 publicada
+
+> A versão publicada ainda representa este fluxo demonstrativo. No código local, a etapa 5 já começou com Supabase Auth, projetos salvos e RLS. Consulte o README para o estado mais recente do desenvolvimento.
 
 O editor pode ser testado sem conta. Os campos alteram o preview imediatamente e a ação **Baixar PNG** gera uma imagem vertical de 1080 × 1920 px. Planos, login e painel ainda são demonstrações; nenhum plano é ativado e nenhum visual é salvo.
 
@@ -34,7 +36,7 @@ Repita a revisão em larguras próximas de 320 px, 390 px e 1280 px, observando 
 
 - O estado do editor vive apenas na página atual e se perde ao recarregar.
 - O painel não mostra arquivos reais e não oferece salvar, duplicar ou excluir.
-- FREE com 3 exportações mensais e PRO ilimitado por R$19,90/mês são hipóteses. Nenhum limite ou pagamento está ativo.
+- FREE com 1 exportação mensal e PRO ilimitado por R$19,90/mês são hipóteses. Nenhum limite ou pagamento está ativo.
 - A vitrine pública de marcas é uma imagem ilustrativa; o editor oferece um ícone pronto de exemplo e aceita logo enviado pelo usuário.
 - A seção de avaliações usa perfis e notas fictícios, identificados na página. Não representam prova social do produto.
 - A composição imita uma tela bloqueada apenas como imagem. Não dispara notificações reais.

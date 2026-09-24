@@ -92,7 +92,7 @@ O arquivo final:
 
 O primeiro clique inicia o download. Depois da geração, o editor também mantém um link de abertura e oferece compartilhamento quando o navegador permite.
 
-Para exportar, o usuário precisa estar autenticado. O banco registra somente a primeira exportação concluída de cada mês, considerando o fuso de São Paulo. A chave única `(user_id, month_start)` impede que cliques simultâneos ultrapassem o limite. O PNG é gerado antes dessa confirmação, portanto uma falha de captura não consome a cota.
+Para exportar, o usuário precisa estar autenticado. Quando alguém sem conta tenta baixar, o editor guarda localmente textos, relógio, posição, wallpaper e logo, abre o cadastro gratuito e restaura a edição após o acesso. O banco registra somente a primeira exportação concluída de cada mês, considerando o fuso de São Paulo. A chave única `(user_id, month_start)` impede que cliques simultâneos ultrapassem o limite. O PNG é gerado antes dessa confirmação, portanto uma falha de captura não consome a cota.
 
 ## Planos apresentados no MVP
 
@@ -101,7 +101,7 @@ Para exportar, o usuário precisa estar autenticado. O banco registra somente a 
 | FREE | 1 exportação por mês por conta. |
 | PRO | Exportações ilimitadas por R$19,90/mês. |
 
-O limite do FREE já está ativo. O PRO permanece demonstrativo e nenhum pagamento é processado nesta etapa.
+O limite do FREE já está ativo. O cadastro não exige escolha de plano: a oferta do PRO aparece no editor somente depois que a cota gratuita é utilizada. O PRO permanece demonstrativo e nenhum pagamento é processado nesta etapa.
 
 ## Tecnologia
 

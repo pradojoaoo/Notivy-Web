@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import PrototypeShell from "../_components/prototype-shell";
@@ -15,9 +15,16 @@ function translateAuthError(message) {
   return "Não foi possível concluir o acesso. Tente novamente.";
 }
 
+function safeReturnPath(value) {
+  if (!value?.startsWith("/") || value.startsWith("//")) return "/painel";
+  return value;
+}
+
 export default function AccessPage() {
   const router = useRouter();
+  const returnPath = useRef("/painel");
   const [mode, setMode] = useState("login");
+  const [exportIntent, setExportIntent] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,11 +34,18 @@ export default function AccessPage() {
 
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
+    const params = new URL(window.location.href).searchParams;
+    const nextPath = safeReturnPath(params.get("next"));
+    const shouldExport = params.get("intent") === "export";
+    returnPath.current = nextPath;
+    setExportIntent(shouldExport);
+    if (shouldExport) setMode("signup");
+
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) router.replace("/painel");
+      if (data.session) router.replace(nextPath);
     });
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) router.replace("/painel");
+      if (session) router.replace(returnPath.current);
     });
     return () => authListener.subscription.unsubscribe();
   }, [router]);
@@ -69,7 +83,10 @@ export default function AccessPage() {
       ? await supabase.auth.signUp({
           email,
           password,
-          options: { data: { full_name: name.trim() } },
+          options: {
+            data: { full_name: name.trim() },
+            emailRedirectTo: `${window.location.origin}/entrar/?intent=${exportIntent ? "export" : "access"}&next=${encodeURIComponent(returnPath.current)}`,
+          },
         })
       : await supabase.auth.signInWithPassword({ email, password });
 
@@ -82,7 +99,7 @@ export default function AccessPage() {
     }
 
     if (result.data.session) {
-      router.push("/painel");
+      router.push(returnPath.current);
       return;
     }
 
@@ -93,11 +110,11 @@ export default function AccessPage() {
   return (
     <PrototypeShell current="/entrar">
       <div className="access-layout">
-        <section className="access-intro"><p className="eyebrow">Área do cliente</p><h1>Seus prints<br /><span>em um só lugar.</span></h1><p className="lead">Crie uma conta gratuita para salvar suas notificações e encontrá-las novamente no painel.</p><Link className="text-link" href="/#planos">Ainda não escolheu um plano? Conheça os planos →</Link></section>
+        <section className="access-intro"><p className="eyebrow">Área do cliente</p><h1>{exportIntent ? <>Seu print está<br /><span>quase pronto.</span></> : <>Seus prints<br /><span>em um só lugar.</span></>}</h1><p className="lead">{exportIntent ? "Crie uma conta gratuitamente para exportar." : "Crie uma conta gratuita para salvar suas notificações e encontrá-las novamente no painel."}</p>{exportIntent ? <Link className="text-link" href="/editor/?resume=export">← Voltar para a edição</Link> : <Link className="text-link" href="/#planos">Conheça os planos →</Link>}</section>
         <section className="panel access-card" aria-labelledby="access-title">
           {!recoveringPassword && <div className="segmented-control" role="group" aria-label="Tipo de acesso"><button type="button" aria-pressed={mode === "login"} onClick={() => changeMode("login")}>Entrar</button><button type="button" aria-pressed={creatingAccount} onClick={() => changeMode("signup")}>Primeiro acesso</button></div>}
           <h2 id="access-title">{recoveringPassword ? "Recupere seu acesso" : creatingAccount ? "Crie seu espaço" : "Bom ter você de volta"}</h2>
-          <p className="hint" id="access-note">{recoveringPassword ? "Informe seu e-mail para receber um link seguro de redefinição." : creatingAccount ? "O cadastro gratuito usa e-mail e senha." : "Entre para acessar os prints vinculados à sua conta."}</p>
+          <p className="hint" id="access-note">{recoveringPassword ? "Informe seu e-mail para receber um link seguro de redefinição." : creatingAccount ? exportIntent ? "Crie sua conta e volte para a edição sem perder as alterações." : "O cadastro gratuito usa e-mail e senha." : exportIntent ? "Entre e volte para a edição sem perder as alterações." : "Entre para acessar os prints vinculados à sua conta."}</p>
           <form onSubmit={submitAccess}>
             <fieldset disabled={submitting} aria-describedby="access-note access-message">
               <legend className="sr-only">Campos para {recoveringPassword ? "recuperação de senha" : creatingAccount ? "cadastro" : "login"}</legend>

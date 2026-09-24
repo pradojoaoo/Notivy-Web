@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import PrototypeShell from "../_components/prototype-shell";
 import NotificationPreview from "../_components/notification-preview";
 import { exportPreviewPng } from "../_lib/export-preview";
 import { getSupabaseBrowserClient } from "../_lib/supabase-client";
 import EditorControls from "./_components/editor-controls";
+import { loadExportDraft, removeExportDraft, saveExportDraft } from "./_lib/export-draft";
 import { DEFAULT_BACKGROUND, DEFAULT_ICON, EXPORT_READY_MESSAGE, INITIAL_CLOCK, INITIAL_VALUES } from "./_lib/editor-config";
 
 const ASSET_BUCKET = "notivy-assets";
@@ -38,6 +40,7 @@ function validateAsset(file) {
 }
 
 export default function EditorPage() {
+  const router = useRouter();
   const previewRef = useRef(null);
   const exportInProgress = useRef(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -61,6 +64,42 @@ export default function EditorPage() {
   useEffect(() => () => { if (customBackgroundUrl) URL.revokeObjectURL(customBackgroundUrl); }, [customBackgroundUrl]);
   useEffect(() => () => { if (customIconUrl) URL.revokeObjectURL(customIconUrl); }, [customIconUrl]);
   useEffect(() => () => { if (downloadFile?.url) URL.revokeObjectURL(downloadFile.url); }, [downloadFile]);
+  useEffect(() => {
+    const shouldResumeExport = new URL(window.location.href).searchParams.get("resume") === "export";
+    if (!shouldResumeExport) return;
+
+    let isActive = true;
+    loadExportDraft().then((draft) => {
+      if (!isActive || !draft) return;
+
+      setValues({ ...INITIAL_VALUES, ...(draft.values ?? {}) });
+      setClock({ ...INITIAL_CLOCK, ...(draft.clock ?? {}) });
+
+      if (draft.backgroundFile) {
+        const url = URL.createObjectURL(draft.backgroundFile);
+        setBackgroundFile(draft.backgroundFile);
+        setCustomBackgroundUrl(url);
+        setBackgroundUrl(url);
+      } else {
+        setBackgroundUrl(draft.backgroundUrl || DEFAULT_BACKGROUND);
+      }
+
+      if (draft.iconFile) {
+        const url = URL.createObjectURL(draft.iconFile);
+        setIconFile(draft.iconFile);
+        setCustomIconUrl(url);
+        setAppIcon(url);
+      } else {
+        setAppIcon(draft.appIcon || DEFAULT_ICON);
+      }
+
+      setExportMessage("Sua edição foi restaurada. Agora você pode baixar o PNG.");
+    }).catch(() => {
+      if (isActive) setExportMessage("Não foi possível restaurar a edição anterior.");
+    });
+
+    return () => { isActive = false; };
+  }, []);
   useEffect(() => {
     let isActive = true;
     const supabase = getSupabaseBrowserClient();
@@ -271,7 +310,21 @@ export default function EditorPage() {
       const { data: userData, error: userError } = await supabase.auth.getUser();
       if (userError || !userData.user) {
         setExportQuota({ ...INITIAL_EXPORT_QUOTA, isLoading: false });
-        setExportMessage("Entre na sua conta gratuita para usar 1 exportação por mês.");
+        setExportMessage("Crie uma conta gratuitamente para exportar.");
+        try {
+          await saveExportDraft({
+            values,
+            clock,
+            backgroundUrl: backgroundUrl.startsWith("blob:") ? DEFAULT_BACKGROUND : backgroundUrl,
+            backgroundFile,
+            appIcon: appIcon.startsWith("blob:") ? DEFAULT_ICON : appIcon,
+            iconFile,
+          });
+        } catch {
+          setExportMessage("Não foi possível guardar sua edição neste navegador. Tente novamente.");
+          return;
+        }
+        router.push("/entrar/?intent=export&next=%2Feditor%2F%3Fresume%3Dexport");
         return;
       }
 
@@ -321,6 +374,7 @@ export default function EditorPage() {
       document.body.appendChild(link);
       link.click();
       link.remove();
+      removeExportDraft().catch(() => {});
       setExportMessage("PNG pronto em 1080 × 1920 px. Se o download não abrir, use o link abaixo.");
     } catch { setExportMessage("Não foi possível gerar a imagem. Tente novamente."); }
     finally { exportInProgress.current = false; setIsExporting(false); }

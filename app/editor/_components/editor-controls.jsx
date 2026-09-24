@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { BUILT_IN_ICONS } from "../_lib/editor-config";
 
 export default function EditorControls({
@@ -24,11 +25,11 @@ export default function EditorControls({
 }) {
   const exportLimitReached = exportQuota.isAuthenticated
     && exportQuota.usedCount >= exportQuota.monthlyLimit;
-  let quotaMessage = "Plano FREE: entre para usar 1 exportação por mês.";
+  let quotaMessage = "Crie uma conta gratuitamente para exportar.";
   if (exportQuota.isLoading) quotaMessage = "Consultando sua exportação mensal...";
   else if (exportQuota.hasError) quotaMessage = "Não foi possível consultar sua cota agora.";
   else if (exportLimitReached) quotaMessage = `Limite mensal usado. Nova exportação em ${formatResetDate(exportQuota.resetsAt)}.`;
-  else if (exportQuota.isAuthenticated) quotaMessage = "Plano FREE: 1 exportação disponível neste mês.";
+  else if (exportQuota.isAuthenticated) quotaMessage = "Tudo pronto para exportar seu PNG.";
 
   return (
     <section className="panel editor-panel" aria-labelledby="fields-title" inert={isExporting || isSaving}>
@@ -82,6 +83,7 @@ export default function EditorControls({
       </div>
       <p className="hint" id="save-note" aria-live="polite">{saveMessage}</p>
       <p className="export-quota" aria-live="polite">{quotaMessage}</p>
+      {exportLimitReached && <Link className="text-link export-upgrade-link" href="/assinar/?plano=pro">Conhecer o PRO para exportar mais →</Link>}
       <p className="hint" id="export-note" aria-live="polite">{exportMessage}</p>
       {downloadFile && <div className="export-ready-actions">
         <a className="text-link export-fallback" href={downloadFile.url} download={downloadFile.filename}>Baixar ou abrir o PNG →</a>

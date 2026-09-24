@@ -103,21 +103,39 @@ async function drawNotification(context, screen, output) {
   const width = bounds.width * scale;
   const height = bounds.height * scale;
   const radius = height * .31;
+  const notificationStyle = getComputedStyle(notification);
+  const cssBlur = Number.parseFloat(notificationStyle.getPropertyValue("--notification-glass-blur")) || 18;
+  const saturation = notificationStyle.getPropertyValue("--notification-glass-saturation").trim() || "125%";
+  const tintStart = notificationStyle.getPropertyValue("--notification-tint-start").trim() || "rgba(58, 70, 84, .40)";
+  const tintMiddle = notificationStyle.getPropertyValue("--notification-tint-middle").trim() || "rgba(31, 43, 58, .36)";
+  const tintEnd = notificationStyle.getPropertyValue("--notification-tint-end").trim() || "rgba(25, 35, 50, .42)";
+  const blurRadius = cssBlur * scale;
+  const glassPadding = Math.ceil(blurRadius * 2);
 
   context.save();
   roundedRect(context, x, y, width, height, radius);
   context.clip();
   const glass = document.createElement("canvas");
-  glass.width = Math.ceil(width);
-  glass.height = Math.ceil(height);
+  glass.width = Math.ceil(width + glassPadding * 2);
+  glass.height = Math.ceil(height + glassPadding * 2);
   const glassContext = glass.getContext("2d");
-  glassContext.filter = `blur(${Math.max(12, width * .018)}px) saturate(125%)`;
-  glassContext.drawImage(output, x - 18, y - 18, width + 36, height + 36, -18, -18, width + 36, height + 36);
-  context.drawImage(glass, x, y, width, height);
+  glassContext.filter = `blur(${blurRadius}px) saturate(${saturation})`;
+  glassContext.drawImage(
+    output,
+    x - glassPadding,
+    y - glassPadding,
+    width + glassPadding * 2,
+    height + glassPadding * 2,
+    0,
+    0,
+    width + glassPadding * 2,
+    height + glassPadding * 2,
+  );
+  context.drawImage(glass, x - glassPadding, y - glassPadding);
   const tint = context.createLinearGradient(x, y, x + width, y + height);
-  tint.addColorStop(0, "rgba(58, 70, 84, .40)");
-  tint.addColorStop(.55, "rgba(31, 43, 58, .36)");
-  tint.addColorStop(1, "rgba(25, 35, 50, .42)");
+  tint.addColorStop(0, tintStart);
+  tint.addColorStop(.55, tintMiddle);
+  tint.addColorStop(1, tintEnd);
   context.fillStyle = tint;
   context.fillRect(x, y, width, height);
   context.restore();

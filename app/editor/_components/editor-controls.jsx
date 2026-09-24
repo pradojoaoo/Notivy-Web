@@ -56,6 +56,7 @@ export default function EditorControls({
         <label>Título<input type="text" value={values.title} onInput={updateValue("title")} /></label>
         <label>Mensagem<textarea rows={3} value={values.message} onInput={updateValue("message")} /></label>
         <label>Horário exibido<input type="text" value={values.notificationTime} onInput={updateValue("notificationTime")} /></label>
+        <label>Transparência da notificação<select value={values.notificationTransparency} onInput={updateValue("notificationTransparency")}><option value="less">Menos transparente</option><option value="more">Mais transparente</option></select></label>
         <label>Onde deixar a notificação<select value={values.notificationPosition} onInput={updateValue("notificationPosition")}><option value="below-clock">Embaixo do horário</option><option value="middle">No centro da tela</option><option value="lower">Mais abaixo</option><option value="free">Posição livre</option></select></label>
         {values.notificationPosition === "free" && (
           <div className="position-controls">

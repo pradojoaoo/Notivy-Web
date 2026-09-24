@@ -1,4 +1,5 @@
 import { domToCanvas } from "modern-screenshot";
+import { filterGlassPixels } from "./notification-glass";
 
 const OUTPUT_WIDTH = 1080;
 const OUTPUT_HEIGHT = 1920;
@@ -47,18 +48,6 @@ function backgroundImageUrl(element) {
   const value = getComputedStyle(element).backgroundImage;
   const match = value.match(/^url\(["']?(.*?)["']?\)$/);
   return match?.[1] ?? "";
-}
-
-function scaleColorAlpha(color, factor) {
-  if (factor === 1) return color;
-  const sample = document.createElement("canvas");
-  sample.width = 1;
-  sample.height = 1;
-  const sampleContext = sample.getContext("2d");
-  sampleContext.fillStyle = color;
-  sampleContext.fillRect(0, 0, 1, 1);
-  const [red, green, blue, alpha] = sampleContext.getImageData(0, 0, 1, 1).data;
-  return `rgba(${red}, ${green}, ${blue}, ${(alpha / 255) * factor})`;
 }
 
 function canvasFont(element, scale) {
@@ -118,12 +107,11 @@ async function drawNotification(context, screen, output) {
   const notificationStyle = getComputedStyle(notification);
   const cssBlur = Number.parseFloat(notificationStyle.getPropertyValue("--notification-glass-blur")) || 18;
   const saturation = notificationStyle.getPropertyValue("--notification-glass-saturation").trim() || "125%";
-  const exportAlphaScale = notification.classList.contains("notification-transparency-less") ? .9 : 1;
-  const tintStart = scaleColorAlpha(notificationStyle.getPropertyValue("--notification-tint-start").trim() || "rgba(58, 70, 84, .40)", exportAlphaScale);
-  const tintMiddle = scaleColorAlpha(notificationStyle.getPropertyValue("--notification-tint-middle").trim() || "rgba(31, 43, 58, .36)", exportAlphaScale);
-  const tintEnd = scaleColorAlpha(notificationStyle.getPropertyValue("--notification-tint-end").trim() || "rgba(25, 35, 50, .42)", exportAlphaScale);
+  const tintStart = notificationStyle.getPropertyValue("--notification-tint-start").trim() || "rgba(58, 70, 84, .40)";
+  const tintMiddle = notificationStyle.getPropertyValue("--notification-tint-middle").trim() || "rgba(31, 43, 58, .36)";
+  const tintEnd = notificationStyle.getPropertyValue("--notification-tint-end").trim() || "rgba(25, 35, 50, .42)";
   const blurRadius = cssBlur * scale;
-  const glassPadding = Math.ceil(blurRadius * 2);
+  const glassPadding = Math.ceil(blurRadius * 3);
 
   context.save();
   roundedRect(context, x, y, width, height, radius);
@@ -132,20 +120,34 @@ async function drawNotification(context, screen, output) {
   glass.width = Math.ceil(width + glassPadding * 2);
   glass.height = Math.ceil(height + glassPadding * 2);
   const glassContext = glass.getContext("2d");
-  glassContext.filter = `blur(${blurRadius}px) saturate(${saturation})`;
-  glassContext.drawImage(
-    output,
-    x - glassPadding,
-    y - glassPadding,
-    width + glassPadding * 2,
-    height + glassPadding * 2,
-    0,
-    0,
-    width + glassPadding * 2,
-    height + glassPadding * 2,
-  );
-  context.drawImage(glass, x - glassPadding, y - glassPadding);
-  const tint = context.createLinearGradient(x, y, x + width, y + height);
+  const glassX = Math.floor(x - glassPadding);
+  const glassY = Math.floor(y - glassPadding);
+  const backdrop = context.getImageData(0, 0, output.width, output.height);
+  const glassPixels = glassContext.createImageData(glass.width, glass.height);
+  // Extend the wallpaper at the screen edges instead of introducing transparent
+  // black pixels into the blur kernel.
+  for (let row = 0; row < glass.height; row++) {
+    const sourceY = Math.max(0, Math.min(output.height - 1, glassY + row));
+    for (let column = 0; column < glass.width; column++) {
+      const sourceX = Math.max(0, Math.min(output.width - 1, glassX + column));
+      const sourceIndex = (sourceY * output.width + sourceX) * 4;
+      const targetIndex = (row * glass.width + column) * 4;
+      for (let channel = 0; channel < 4; channel++) {
+        glassPixels.data[targetIndex + channel] = backdrop.data[sourceIndex + channel];
+      }
+    }
+  }
+  filterGlassPixels(glassPixels.data, glass.width, glass.height, blurRadius, Number.parseFloat(saturation) / 100);
+  glassContext.putImageData(glassPixels, 0, 0);
+  context.drawImage(glass, glassX, glassY);
+  // Match the CSS 110deg gradient, whose endpoints are not the box corners.
+  const angle = 110 * Math.PI / 180;
+  const dx = Math.sin(angle);
+  const dy = -Math.cos(angle);
+  const halfLength = (Math.abs(width * dx) + Math.abs(height * dy)) / 2;
+  const centerX = x + width / 2;
+  const centerY = y + height / 2;
+  const tint = context.createLinearGradient(centerX - dx * halfLength, centerY - dy * halfLength, centerX + dx * halfLength, centerY + dy * halfLength);
   tint.addColorStop(0, tintStart);
   tint.addColorStop(.55, tintMiddle);
   tint.addColorStop(1, tintEnd);

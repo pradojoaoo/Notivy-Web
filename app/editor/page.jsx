@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import PrototypeShell from "../_components/prototype-shell";
 import NotificationPreview from "../_components/notification-preview";
-import { exportPreviewPng } from "../_lib/export-preview";
+import { exportDisplayedPreview } from "../_lib/preview-renderer";
 import { getSupabaseBrowserClient } from "../_lib/supabase-client";
 import EditorControls from "./_components/editor-controls";
 import { loadExportDraft, removeExportDraft, saveExportDraft } from "./_lib/export-draft";
@@ -356,7 +356,7 @@ export default function EditorPage() {
       }
 
       setExportMessage("Preparando a imagem...");
-      const blob = await exportPreviewPng(previewRef.current);
+      const blob = await exportDisplayedPreview(previewRef.current);
       setExportMessage("Confirmando sua exportação mensal...");
       const { data: claim, error: claimError } = await supabase
         .rpc("claim_monthly_export", { p_project_id: projectId })
@@ -421,7 +421,7 @@ export default function EditorPage() {
     <div className="editor-grid">
       <section className="panel preview-panel" aria-labelledby="preview-title" aria-busy={isExporting}>
         <div className="section-heading"><h2 id="preview-title">Preview</h2><span className="badge">1080 × 1920</span></div>
-        <NotificationPreview previewRef={previewRef} backgroundUrl={backgroundUrl} appIcon={appIcon} appName={values.appName} title={values.title} message={values.message} notificationTime={values.notificationTime} notificationTransparency={values.notificationTransparency} notificationPosition={values.notificationPosition} notificationX={Number(values.notificationX)} notificationY={Number(values.notificationY)} onNotificationMove={isExporting ? undefined : setFreePosition} editableLockScreen renderControls weekday={values.weekday} day={values.day} month={values.month} alarmTime={values.alarmTime} mainTime={values.mainTime} clockFont={clock.font} clockWeight={Number(clock.weight)} clockColor={clock.color} clockSize={Number(clock.size)} clockSpacing={Number(clock.spacing)} />
+        <NotificationPreview previewRef={previewRef} backgroundUrl={backgroundUrl} appIcon={appIcon} appName={values.appName} title={values.title} message={values.message} notificationTime={values.notificationTime} notificationPosition={values.notificationPosition} notificationX={Number(values.notificationX)} notificationY={Number(values.notificationY)} onNotificationMove={isExporting ? undefined : setFreePosition} editableLockScreen renderControls weekday={values.weekday} day={values.day} month={values.month} alarmTime={values.alarmTime} mainTime={values.mainTime} clockFont={clock.font} clockWeight={Number(clock.weight)} clockColor={clock.color} clockSize={Number(clock.size)} clockSpacing={Number(clock.spacing)} />
         {values.notificationPosition === "free" && <p className="preview-drag-hint">Arraste a notificação diretamente na tela.</p>}
       </section>
       <EditorControls

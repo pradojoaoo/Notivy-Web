@@ -6,6 +6,9 @@ const OUTPUT_HEIGHT = 1920;
 const RENDER_SCALE = 1;
 
 function preserveLineClamp(node) {
+  if (node instanceof HTMLElement && node.classList.contains("preview-rendered-image")) {
+    node.style.display = "none";
+  }
   if (node instanceof HTMLElement && node.classList.contains("notification-readable")) {
     node.style.visibility = "hidden";
   }
@@ -188,7 +191,7 @@ async function drawNotification(context, screen, output) {
   drawSingleLine(context, time, origin, scale);
 }
 
-export async function exportPreviewPng(screen) {
+export async function renderPreviewPng(screen) {
   if (!screen) throw new Error("Prévia indisponível");
   await document.fonts.ready;
   const computed = getComputedStyle(screen);

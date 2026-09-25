@@ -1,6 +1,8 @@
 "use client";
 
-import { useRef } from "react";
+import Image from "next/image";
+import { useLayoutEffect, useRef, useState } from "react";
+import { refreshPreview } from "../_lib/preview-renderer";
 
 export default function NotificationPreview({
   backgroundUrl = "/images/iphone-generic-v4.png",
@@ -9,7 +11,6 @@ export default function NotificationPreview({
   title = "Transferência recebida",
   message = "Você recebeu uma transferência de R$427,80 de SHPAY.",
   notificationTime = "agora",
-  notificationTransparency = "less",
   notificationPosition = "below-clock",
   editableLockScreen = false,
   maskOriginalUi = false,
@@ -31,6 +32,42 @@ export default function NotificationPreview({
   previewRef,
 }) {
   const canvasRef = useRef(null);
+  const renderedUrlRef = useRef(null);
+  const [renderedUrl, setRenderedUrl] = useState("");
+  const renderKey = JSON.stringify({ backgroundUrl, appIcon, appName, title, message, notificationTime, notificationPosition, notificationX, notificationY, editableLockScreen, maskOriginalUi, renderControls, referenceStyle, weekday, day, month, alarmTime, mainTime, clockFont, clockWeight, clockColor, clockSize, clockSpacing });
+  useLayoutEffect(() => {
+    // Landing-page examples keep their lightweight CSS preview. The editor
+    // displays the same 1080 × 1920 PNG that its download action returns.
+    if (!previewRef) return;
+    const screen = canvasRef.current;
+    let active = true;
+    const refresh = () => {
+      screen.setAttribute("aria-busy", "true");
+      refreshPreview(screen, (blob) => {
+        if (!active) return;
+        const url = URL.createObjectURL(blob);
+        const previous = renderedUrlRef.current;
+        renderedUrlRef.current = url;
+        setRenderedUrl(url);
+        screen.setAttribute("aria-busy", "false");
+        if (previous) URL.revokeObjectURL(previous);
+      }, () => {
+        if (active) screen.setAttribute("aria-busy", "false");
+      });
+    };
+    refresh();
+    const observer = new ResizeObserver(refresh);
+    observer.observe(screen);
+    document.fonts.addEventListener("loadingdone", refresh);
+    return () => {
+      active = false;
+      observer.disconnect();
+      document.fonts.removeEventListener("loadingdone", refresh);
+    };
+  }, [renderKey, previewRef]);
+  useLayoutEffect(() => () => {
+    if (renderedUrlRef.current) URL.revokeObjectURL(renderedUrlRef.current);
+  }, []);
   const isFreePosition = notificationPosition === "free";
   const canvasClassName = [
     "preview-canvas",
@@ -102,7 +139,7 @@ export default function NotificationPreview({
 
           <div
             data-preview-layer="2"
-            className={`notification notification-private notification-readable notification-transparency-${notificationTransparency} notification-position-${notificationPosition}`}
+            className={`notification notification-private notification-readable notification-position-${notificationPosition}`}
             style={isFreePosition ? { left: `${notificationX}%`, top: `${notificationY}%` } : undefined}
             onPointerDown={(event) => {
               if (!isFreePosition) return;
@@ -123,6 +160,7 @@ export default function NotificationPreview({
             <span className="notification-readable-time">{notificationTime}</span>
           </div>
 
+          {previewRef && renderedUrl && <Image className="preview-rendered-image" src={renderedUrl} width={1080} height={1920} unoptimized alt="" aria-hidden="true" />}
           {renderControls && (
             <>
               <div data-preview-layer="4" className="lock-screen-controls" aria-hidden="true">

@@ -9,6 +9,7 @@ export default function NotificationPreview({
   title = "Transferência recebida",
   message = "Você recebeu uma transferência de R$427,80 de SHPAY.",
   notificationTime = "agora",
+  notificationTransparency = "less",
   notificationPosition = "below-clock",
   editableLockScreen = false,
   maskOriginalUi = false,
@@ -101,7 +102,7 @@ export default function NotificationPreview({
 
           <div
             data-preview-layer="2"
-            className={`notification notification-private notification-readable notification-position-${notificationPosition}`}
+            className={`notification notification-private notification-readable notification-transparency-${notificationTransparency} notification-position-${notificationPosition}`}
             style={isFreePosition ? { left: `${notificationX}%`, top: `${notificationY}%` } : undefined}
             onPointerDown={(event) => {
               if (!isFreePosition) return;

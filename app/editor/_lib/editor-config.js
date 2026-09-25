@@ -11,6 +11,7 @@ export const INITIAL_VALUES = {
   title: "Transferência recebida",
   message: "Você recebeu uma transferência de R$427,80 de SHPAY.",
   notificationTime: "agora",
+  notificationTransparency: "less",
   notificationPosition: "below-clock",
   notificationX: 50,
   notificationY: 48,

@@ -107,9 +107,9 @@ async function drawNotification(context, screen, output) {
   const notificationStyle = getComputedStyle(notification);
   const cssBlur = Number.parseFloat(notificationStyle.getPropertyValue("--notification-glass-blur")) || 18;
   const saturation = notificationStyle.getPropertyValue("--notification-glass-saturation").trim() || "125%";
-  const tintStart = notificationStyle.getPropertyValue("--notification-tint-start").trim() || "rgba(58, 70, 84, .40)";
-  const tintMiddle = notificationStyle.getPropertyValue("--notification-tint-middle").trim() || "rgba(31, 43, 58, .36)";
-  const tintEnd = notificationStyle.getPropertyValue("--notification-tint-end").trim() || "rgba(25, 35, 50, .42)";
+  const tintStart = notificationStyle.getPropertyValue("--notification-tint-start").trim() || "rgba(58, 70, 84, .78)";
+  const tintMiddle = notificationStyle.getPropertyValue("--notification-tint-middle").trim() || "rgba(31, 43, 58, .74)";
+  const tintEnd = notificationStyle.getPropertyValue("--notification-tint-end").trim() || "rgba(25, 35, 50, .80)";
   const blurRadius = cssBlur * scale;
   const glassPadding = Math.ceil(blurRadius * 3);
 

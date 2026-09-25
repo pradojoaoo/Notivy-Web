@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import PrototypeShell from "../_components/prototype-shell";
 import NotificationPreview from "../_components/notification-preview";
-import { exportDisplayedPreview } from "../_lib/preview-renderer";
+import { exportPreviewPng } from "../_lib/export-preview";
 import { getSupabaseBrowserClient } from "../_lib/supabase-client";
 import EditorControls from "./_components/editor-controls";
 import { loadExportDraft, removeExportDraft, saveExportDraft } from "./_lib/export-draft";
@@ -356,7 +356,7 @@ export default function EditorPage() {
       }
 
       setExportMessage("Preparando a imagem...");
-      const blob = await exportDisplayedPreview(previewRef.current);
+      const blob = await exportPreviewPng(previewRef.current);
       setExportMessage("Confirmando sua exportação mensal...");
       const { data: claim, error: claimError } = await supabase
         .rpc("claim_monthly_export", { p_project_id: projectId })

@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import PrototypeShell from "../_components/prototype-shell";
 import NotificationPreview from "../_components/notification-preview";
 import { exportPreviewPng } from "../_lib/export-preview";
-import { getSupabaseBrowserClient } from "../_lib/supabase-client";
+import { getSupabaseBrowserClient, withRequestTimeout } from "../_lib/supabase-client";
 import EditorControls from "./_components/editor-controls";
 import { loadExportDraft, removeExportDraft, saveExportDraft } from "./_lib/export-draft";
 import { DEFAULT_BACKGROUND, DEFAULT_ICON, EXPORT_READY_MESSAGE, INITIAL_CLOCK, INITIAL_VALUES } from "./_lib/editor-config";
@@ -112,7 +112,14 @@ export default function EditorPage() {
       }
 
       if (isActive) setExportQuota((current) => ({ ...current, isLoading: true, isAuthenticated: true }));
-      const { data, error } = await supabase.rpc("get_monthly_export_status").single();
+      let quotaResult;
+      try {
+        quotaResult = await withRequestTimeout(supabase.rpc("get_monthly_export_status").single());
+      } catch {
+        if (isActive) setExportQuota({ ...INITIAL_EXPORT_QUOTA, isLoading: false, isAuthenticated: true, hasError: true });
+        return;
+      }
+      const { data, error } = quotaResult;
       if (!isActive) return;
 
       if (error || !data) {
@@ -130,7 +137,11 @@ export default function EditorPage() {
       });
     };
 
-    supabase.auth.getUser().then(({ data }) => refreshExportQuota(data.user));
+    withRequestTimeout(supabase.auth.getSession())
+      .then(({ data }) => refreshExportQuota(data.session?.user ?? null))
+      .catch(() => {
+        if (isActive) setExportQuota({ ...INITIAL_EXPORT_QUOTA, isLoading: false, hasError: true });
+      });
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       setTimeout(() => refreshExportQuota(session?.user ?? null), 0);
     });
@@ -234,9 +245,19 @@ export default function EditorPage() {
     setIsSaving(true);
     setSaveMessage("Salvando no seu painel...");
     const supabase = getSupabaseBrowserClient();
-    const { data: userData, error: userError } = await supabase.auth.getUser();
+    let session;
 
-    if (userError || !userData.user) {
+    try {
+      const { data, error } = await withRequestTimeout(supabase.auth.getSession());
+      if (error) throw error;
+      session = data.session;
+    } catch {
+      setIsSaving(false);
+      setSaveMessage("Não foi possível confirmar sua sessão. Confira sua conexão e tente novamente.");
+      return;
+    }
+
+    if (!session) {
       setIsSaving(false);
       setSaveMessage("Entre na sua conta antes de salvar o print.");
       return;
@@ -244,12 +265,14 @@ export default function EditorPage() {
 
     const nextProjectId = projectId ?? crypto.randomUUID();
     const uploadAsset = async (file, assetType) => {
-      const path = `${userData.user.id}/${nextProjectId}/${assetType}`;
-      const { error } = await supabase.storage.from(ASSET_BUCKET).upload(path, file, {
-        cacheControl: "3600",
-        contentType: file.type,
-        upsert: true,
-      });
+      const path = `${session.user.id}/${nextProjectId}/${assetType}`;
+      const { error } = await withRequestTimeout(
+        supabase.storage.from(ASSET_BUCKET).upload(path, file, {
+          cacheControl: "3600",
+          contentType: file.type,
+          upsert: true,
+        }),
+      );
       if (error) throw error;
       return path;
     };
@@ -282,9 +305,16 @@ export default function EditorPage() {
       updated_at: new Date().toISOString(),
     };
 
-    const result = projectId
-      ? await supabase.from("notification_projects").update(projectData).eq("id", projectId).select("id").single()
-      : await supabase.from("notification_projects").insert({ id: nextProjectId, ...projectData, user_id: userData.user.id }).select("id").single();
+    let result;
+    try {
+      result = await withRequestTimeout(projectId
+        ? supabase.from("notification_projects").update(projectData).eq("id", projectId).select("id").single()
+        : supabase.from("notification_projects").insert({ id: nextProjectId, ...projectData, user_id: session.user.id }).select("id").single());
+    } catch {
+      setIsSaving(false);
+      setSaveMessage("O salvamento demorou mais que o esperado. Confira sua conexão e tente novamente.");
+      return;
+    }
 
     setIsSaving(false);
     if (result.error) {

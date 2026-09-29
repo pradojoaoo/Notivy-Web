@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import PrototypeShell from "../_components/prototype-shell";
-import { getSupabaseBrowserClient } from "../_lib/supabase-client";
+import { getSupabaseBrowserClient, withRequestTimeout } from "../_lib/supabase-client";
 
 const ASSET_BUCKET = "notivy-assets";
 
@@ -32,29 +32,50 @@ export default function DashboardPage() {
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [busyProjectId, setBusyProjectId] = useState(null);
+  const [loadAttempt, setLoadAttempt] = useState(0);
 
   useEffect(() => {
+    let isActive = true;
     const supabase = getSupabaseBrowserClient();
-    supabase.auth.getUser().then(async ({ data: userData, error: userError }) => {
-      if (userError || !userData.user) {
-        router.replace("/entrar");
-        return;
-      }
+    const loadDashboard = async () => {
+      setLoading(true);
+      setError("");
 
-      setEmail(userData.user.email ?? "");
-      const { data, error: projectsError } = await supabase
-        .from("notification_projects")
-        .select("id, name, editor_state, updated_at")
-        .order("updated_at", { ascending: false });
+      try {
+        const { data: sessionData, error: sessionError } = await withRequestTimeout(
+          supabase.auth.getSession(),
+        );
+        const session = sessionData.session;
 
-      if (projectsError) {
-        setError("Não foi possível carregar seus prints.");
-      } else {
+        if (sessionError || !session) {
+          router.replace("/entrar");
+          return;
+        }
+
+        if (!isActive) return;
+        setEmail(session.user.email ?? "");
+        const { data, error: projectsError } = await withRequestTimeout(
+          supabase
+            .from("notification_projects")
+            .select("id, name, editor_state, updated_at")
+            .order("updated_at", { ascending: false }),
+        );
+
+        if (!isActive) return;
+        if (projectsError) throw projectsError;
         setProjects(data ?? []);
+      } catch {
+        if (isActive) {
+          setError("Não foi possível carregar seus prints. Confira sua conexão e tente novamente.");
+        }
+      } finally {
+        if (isActive) setLoading(false);
       }
-      setLoading(false);
-    });
-  }, [router]);
+    };
+
+    loadDashboard();
+    return () => { isActive = false; };
+  }, [loadAttempt, router]);
 
   const signOut = async () => {
     await getSupabaseBrowserClient().auth.signOut();
@@ -164,8 +185,8 @@ export default function DashboardPage() {
   return (
     <PrototypeShell current="/painel">
       <div className="page-heading"><div><p className="eyebrow">Seu espaço</p><h1>Meus prints</h1><p>Crie notificações para stories, campanhas, lançamentos e vendas.</p></div><Link className="button button-primary" href="/editor">+ Novo print</Link></div>
-      <div className="dashboard-toolbar"><p className="hint">{email ? `Conta: ${email}` : "Carregando sua conta..."}</p><button className="text-link" type="button" onClick={signOut}>Sair da conta</button></div>
-      {error && <p className="auth-message auth-message-error" role="alert">{error}</p>}
+      <div className="dashboard-toolbar"><p className="hint">{email ? `Conta: ${email}` : loading ? "Carregando sua conta..." : "Conta indisponível"}</p><button className="text-link" type="button" onClick={signOut}>Sair da conta</button></div>
+      {error && <div className="auth-message auth-message-error" role="alert"><p>{error}</p><button className="button button-secondary" type="button" onClick={() => setLoadAttempt((attempt) => attempt + 1)}>Tentar novamente</button></div>}
       {feedback && <p className={`auth-message auth-message-${feedback.type}`} role="status">{feedback.text}</p>}
       {loading ? (
         <section className="panel empty-state" aria-live="polite"><p>Carregando seus prints...</p></section>

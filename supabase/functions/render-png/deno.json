@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "jsx": "react",
+    "jsxFactory": "React.createElement"
+  },
+  "imports": {
+    "@supabase/server": "npm:@supabase/server@1.8.0"
+  }
+}

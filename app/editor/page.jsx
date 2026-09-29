@@ -43,6 +43,8 @@ export default function EditorPage() {
   const router = useRouter();
   const previewRef = useRef(null);
   const exportInProgress = useRef(false);
+  const pendingExportRequest = useRef(null);
+  const pendingAssetRemovals = useRef(new Set());
   const [isExporting, setIsExporting] = useState(false);
   const [values, setValues] = useState(INITIAL_VALUES);
   const [clock, setClock] = useState(INITIAL_CLOCK);
@@ -59,6 +61,7 @@ export default function EditorPage() {
   const [projectId, setProjectId] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("Entre na sua conta para salvar este print.");
+  const [hasEditorAccess, setHasEditorAccess] = useState(false);
   const [exportQuota, setExportQuota] = useState(INITIAL_EXPORT_QUOTA);
   const [showUpgradeOffer, setShowUpgradeOffer] = useState(false);
 
@@ -107,10 +110,16 @@ export default function EditorPage() {
 
     const refreshExportQuota = async (user) => {
       if (!user) {
-        if (isActive) setExportQuota({ ...INITIAL_EXPORT_QUOTA, isLoading: false });
+        if (isActive) {
+          setHasEditorAccess(false);
+          setExportQuota({ ...INITIAL_EXPORT_QUOTA, isLoading: false });
+          const returnTo = `${window.location.pathname}${window.location.search}`;
+          router.replace(`/entrar/?next=${encodeURIComponent(returnTo)}`);
+        }
         return;
       }
 
+      if (isActive) setHasEditorAccess(true);
       if (isActive) setExportQuota((current) => ({ ...current, isLoading: true, isAuthenticated: true }));
       let quotaResult;
       try {
@@ -150,7 +159,7 @@ export default function EditorPage() {
       isActive = false;
       authListener.subscription.unsubscribe();
     };
-  }, []);
+  }, [router]);
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
     const requestedProjectId = new URL(window.location.href).searchParams.get("project");
@@ -183,6 +192,7 @@ export default function EditorPage() {
       setAppIcon(saved.appIcon || DEFAULT_ICON);
       setBackgroundStoragePath(saved.backgroundStoragePath ?? null);
       setIconStoragePath(saved.appIconStoragePath ?? null);
+      pendingAssetRemovals.current.clear();
       setProjectId(data.id);
 
       const restoreAsset = async (path, setCustomUrl, setDisplayedUrl) => {
@@ -215,6 +225,7 @@ export default function EditorPage() {
     const validationError = validateAsset(file);
     if (validationError) { event.target.value = ""; setSaveMessage(validationError); return; }
     const nextUrl = URL.createObjectURL(file);
+    pendingAssetRemovals.current.delete("background");
     setBackgroundFile(file); setCustomBackgroundUrl(nextUrl); setBackgroundUrl(nextUrl);
     setSaveMessage("Wallpaper pronto para ser enviado quando você salvar o print.");
   };
@@ -224,12 +235,13 @@ export default function EditorPage() {
     const validationError = validateAsset(file);
     if (validationError) { event.target.value = ""; setSaveMessage(validationError); return; }
     const nextUrl = URL.createObjectURL(file);
+    pendingAssetRemovals.current.delete("icon");
     setIconFile(file); setCustomIconUrl(nextUrl); setAppIcon(nextUrl);
     setSaveMessage("Logo pronto para ser enviado quando você salvar o print.");
   };
   const selectBuiltInIcon = (icon) => {
+    if (iconStoragePath) pendingAssetRemovals.current.add("icon");
     setIconFile(null);
-    setIconStoragePath(null);
     setCustomIconUrl("");
     setAppIcon(icon.src);
     setValues((current) => ({ ...current, appName: icon.name }));
@@ -237,8 +249,10 @@ export default function EditorPage() {
   const setFreePosition = ({ x, y }) => setValues((current) => ({ ...current, notificationPosition: "free", notificationX: x, notificationY: y }));
 
   const resetEditor = () => {
-    setValues(INITIAL_VALUES); setClock(INITIAL_CLOCK); setBackgroundUrl(DEFAULT_BACKGROUND); setCustomBackgroundUrl(""); setBackgroundFile(null); setBackgroundStoragePath(null);
-    setAppIcon(DEFAULT_ICON); setCustomIconUrl(""); setIconFile(null); setIconStoragePath(null); setDownloadFile(null); setExportMessage(EXPORT_READY_MESSAGE);
+    if (backgroundStoragePath) pendingAssetRemovals.current.add("background");
+    if (iconStoragePath) pendingAssetRemovals.current.add("icon");
+    setValues(INITIAL_VALUES); setClock(INITIAL_CLOCK); setBackgroundUrl(DEFAULT_BACKGROUND); setCustomBackgroundUrl(""); setBackgroundFile(null);
+    setAppIcon(DEFAULT_ICON); setCustomIconUrl(""); setIconFile(null); setDownloadFile(null); setExportMessage(EXPORT_READY_MESSAGE);
   };
 
   const saveProject = async () => {
@@ -264,6 +278,51 @@ export default function EditorPage() {
     }
 
     const nextProjectId = projectId ?? crypto.randomUUID();
+    const isNewProject = !projectId;
+    const projectName = values.title.trim().slice(0, 120) || "Print sem título";
+    const cleanupNewProject = async () => {
+      const paths = ["background", "icon"].map((assetType) => `${session.user.id}/${nextProjectId}/${assetType}`);
+      await Promise.allSettled([
+        withRequestTimeout(supabase.storage.from(ASSET_BUCKET).remove(paths)),
+        withRequestTimeout(supabase.from("notification_projects").delete().eq("id", nextProjectId)),
+      ]);
+    };
+
+    if (isNewProject) {
+      const initialEditorState = {
+        values,
+        clock,
+        backgroundUrl: backgroundFile || backgroundUrl.startsWith("blob:") ? DEFAULT_BACKGROUND : backgroundUrl,
+        appIcon: iconFile || appIcon.startsWith("blob:") ? DEFAULT_ICON : appIcon,
+        backgroundStoragePath: null,
+        appIconStoragePath: null,
+      };
+      let createError;
+      try {
+        ({ error: createError } = await withRequestTimeout(
+          supabase.from("notification_projects").insert({
+            id: nextProjectId,
+            user_id: session.user.id,
+            name: projectName,
+            editor_state: initialEditorState,
+            updated_at: new Date().toISOString(),
+          }),
+        ));
+      } catch {
+        setIsSaving(false);
+        setSaveMessage("O salvamento demorou mais que o esperado. Confira sua conexão e tente novamente.");
+        return;
+      }
+
+      if (createError) {
+        setIsSaving(false);
+        setSaveMessage(createError.message.includes("project_limit_reached")
+          ? "Você atingiu o limite de 100 projetos salvos. Exclua um projeto do painel para salvar outro."
+          : "Não foi possível criar este projeto. Tente novamente.");
+        return;
+      }
+    }
+
     const uploadAsset = async (file, assetType) => {
       const path = `${session.user.id}/${nextProjectId}/${assetType}`;
       const { error } = await withRequestTimeout(
@@ -285,9 +344,35 @@ export default function EditorPage() {
         iconFile ? uploadAsset(iconFile, "icon") : Promise.resolve(iconStoragePath),
       ]);
     } catch {
+      if (isNewProject) await cleanupNewProject();
       setIsSaving(false);
       setSaveMessage("Não foi possível enviar uma das imagens. Confira o formato e tente novamente.");
       return;
+    }
+
+    const obsoletePaths = [];
+    if (pendingAssetRemovals.current.has("background") && nextBackgroundStoragePath) obsoletePaths.push(nextBackgroundStoragePath);
+    if (pendingAssetRemovals.current.has("icon") && nextIconStoragePath) obsoletePaths.push(nextIconStoragePath);
+
+    if (obsoletePaths.length) {
+      let removeError;
+      try {
+        ({ error: removeError } = await withRequestTimeout(
+          supabase.storage.from(ASSET_BUCKET).remove(obsoletePaths),
+        ));
+      } catch {
+        removeError = new Error("request_timeout");
+      }
+
+      if (removeError) {
+        if (isNewProject) await cleanupNewProject();
+        setIsSaving(false);
+        setSaveMessage("Não foi possível substituir uma imagem salva. Tente novamente.");
+        return;
+      }
+
+      if (pendingAssetRemovals.current.has("background")) nextBackgroundStoragePath = null;
+      if (pendingAssetRemovals.current.has("icon")) nextIconStoragePath = null;
     }
 
     const editorState = {
@@ -298,7 +383,6 @@ export default function EditorPage() {
       backgroundStoragePath: nextBackgroundStoragePath,
       appIconStoragePath: nextIconStoragePath,
     };
-    const projectName = values.title.trim().slice(0, 120) || "Print sem título";
     const projectData = {
       name: projectName,
       editor_state: editorState,
@@ -307,10 +391,16 @@ export default function EditorPage() {
 
     let result;
     try {
-      result = await withRequestTimeout(projectId
-        ? supabase.from("notification_projects").update(projectData).eq("id", projectId).select("id").single()
-        : supabase.from("notification_projects").insert({ id: nextProjectId, ...projectData, user_id: session.user.id }).select("id").single());
+      result = await withRequestTimeout(
+        supabase
+          .from("notification_projects")
+          .update(projectData)
+          .eq("id", nextProjectId)
+          .select("id")
+          .single(),
+      );
     } catch {
+      if (isNewProject) await cleanupNewProject();
       setIsSaving(false);
       setSaveMessage("O salvamento demorou mais que o esperado. Confira sua conexão e tente novamente.");
       return;
@@ -318,6 +408,7 @@ export default function EditorPage() {
 
     setIsSaving(false);
     if (result.error) {
+      if (isNewProject) await cleanupNewProject();
       setSaveMessage("Não foi possível salvar. Tente novamente.");
       return;
     }
@@ -326,6 +417,7 @@ export default function EditorPage() {
     setIconStoragePath(nextIconStoragePath);
     setBackgroundFile(null);
     setIconFile(null);
+    pendingAssetRemovals.current.clear();
     setProjectId(result.data.id);
     window.history.replaceState(null, "", `/editor/?project=${result.data.id}`);
     setSaveMessage("Print e imagens salvos no seu painel.");
@@ -385,32 +477,80 @@ export default function EditorPage() {
         }
       }
 
-      setExportMessage("Preparando a imagem...");
-      const blob = await exportPreviewPng(previewRef.current);
-      setExportMessage("Confirmando sua exportação mensal...");
-      const { data: claim, error: claimError } = await supabase
-        .rpc("claim_monthly_export", { p_project_id: projectId })
-        .single();
+      setExportMessage("Preparando a imagem exatamente como na prévia...");
+      const previewBlob = await exportPreviewPng(previewRef.current);
 
-      if (claimError || !claim) {
-        setExportMessage("Não foi possível confirmar sua cota mensal. Tente novamente.");
-        return;
+      const requestSignature = JSON.stringify({
+        projectId,
+        values,
+        clock,
+        backgroundUrl,
+        appIcon,
+      });
+      if (pendingExportRequest.current?.signature !== requestSignature) {
+        pendingExportRequest.current = { id: crypto.randomUUID(), signature: requestSignature };
       }
 
-      setExportQuota({
-        isLoading: false,
-        isAuthenticated: true,
-        usedCount: claim.used_count,
-        monthlyLimit: claim.monthly_limit,
-        resetsAt: claim.resets_at,
-        hasError: false,
+      const formData = new FormData();
+      formData.set("payload", JSON.stringify({
+        requestId: pendingExportRequest.current.id,
+        projectId,
+        values,
+        clock,
+      }));
+      formData.set("preview", previewBlob, "preview.png");
+
+      const { data: rendered, error: renderError } = await supabase.functions.invoke("render-png", {
+        body: formData,
       });
 
-      if (!claim.allowed) {
-        setShowUpgradeOffer(true);
-        setExportMessage(`Seu limite deste mês já foi usado. Nova exportação em ${formatResetDate(claim.resets_at)}.`);
+      if (renderError || !(rendered instanceof Blob)) {
+        let errorCode = "";
+        try {
+          errorCode = (await renderError?.context?.clone().json())?.code ?? "";
+        } catch { /* A resposta genérica abaixo cobre falhas sem JSON. */ }
+
+        if (errorCode === "quota_exhausted") {
+          const { data: currentQuota } = await supabase.rpc("get_monthly_export_status").single();
+          if (currentQuota) {
+            setExportQuota({
+              isLoading: false,
+              isAuthenticated: true,
+              usedCount: currentQuota.used_count,
+              monthlyLimit: currentQuota.monthly_limit,
+              resetsAt: currentQuota.resets_at,
+              hasError: false,
+            });
+          }
+          pendingExportRequest.current = null;
+          setShowUpgradeOffer(true);
+          setExportMessage(`Seu limite deste mês já foi usado. Nova exportação em ${formatResetDate(currentQuota?.resets_at)}.`);
+          return;
+        }
+        if (errorCode === "rate_limited") {
+          setExportMessage("Muitas tentativas de exportação. Aguarde alguns minutos e tente novamente.");
+          return;
+        }
+        if (errorCode === "request_mismatch" || errorCode === "invalid_payload") {
+          pendingExportRequest.current = null;
+        }
+        setExportMessage("Não foi possível gerar a imagem no servidor. Tente novamente.");
         return;
       }
+
+      const blob = rendered;
+      const { data: currentQuota } = await supabase.rpc("get_monthly_export_status").single();
+      if (currentQuota) {
+        setExportQuota({
+          isLoading: false,
+          isAuthenticated: true,
+          usedCount: currentQuota.used_count,
+          monthlyLimit: currentQuota.monthly_limit,
+          resetsAt: currentQuota.resets_at,
+          hasError: false,
+        });
+      }
+      pendingExportRequest.current = null;
 
       const filename = `notivy-${Date.now()}.png`;
       const url = URL.createObjectURL(blob);
@@ -443,6 +583,16 @@ export default function EditorPage() {
       if (error?.name !== "AbortError") setExportMessage("Não foi possível compartilhar. Use o link abaixo para abrir o PNG.");
     }
   };
+
+  if (!hasEditorAccess) {
+    return (
+      <PrototypeShell current="/editor">
+        <section className="panel empty-state" aria-live="polite">
+          <p>Verificando sua conta...</p>
+        </section>
+      </PrototypeShell>
+    );
+  }
 
   return <PrototypeShell current="/editor">
     <Link className="text-link back-link" href="/painel">← Voltar aos meus prints</Link>

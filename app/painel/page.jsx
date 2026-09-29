@@ -99,6 +99,37 @@ export default function DashboardPage() {
     const copiedPaths = [];
     const sourcePaths = getProjectAssetPaths(project, userId);
     const nextState = { ...(project.editor_state ?? {}) };
+    const initialState = {
+      ...nextState,
+      backgroundStoragePath: null,
+      appIconStoragePath: null,
+    };
+    const copyName = getCopyName(project.name);
+    const cleanupCopy = async () => {
+      if (copiedPaths.length) await supabase.storage.from(ASSET_BUCKET).remove(copiedPaths);
+      await supabase.from("notification_projects").delete().eq("id", copyId);
+    };
+
+    const { error: createError } = await supabase
+      .from("notification_projects")
+      .insert({
+        id: copyId,
+        user_id: userId,
+        name: copyName,
+        editor_state: initialState,
+        updated_at: new Date().toISOString(),
+      });
+
+    if (createError) {
+      setFeedback({
+        type: "error",
+        text: createError.message.includes("project_limit_reached")
+          ? "Você atingiu o limite de 100 projetos salvos. Exclua um projeto antes de duplicar outro."
+          : "Não foi possível criar a cópia deste print.",
+      });
+      setBusyProjectId(null);
+      return;
+    }
 
     for (const sourcePath of sourcePaths) {
       const assetType = sourcePath.endsWith("/icon") ? "icon" : "background";
@@ -108,7 +139,7 @@ export default function DashboardPage() {
         .copy(sourcePath, destinationPath);
 
       if (copyError) {
-        if (copiedPaths.length) await supabase.storage.from(ASSET_BUCKET).remove(copiedPaths);
+        await cleanupCopy();
         setFeedback({ type: "error", text: "Não foi possível duplicar as imagens deste print." });
         setBusyProjectId(null);
         return;
@@ -121,18 +152,13 @@ export default function DashboardPage() {
 
     const { data, error: insertError } = await supabase
       .from("notification_projects")
-      .insert({
-        id: copyId,
-        user_id: userId,
-        name: getCopyName(project.name),
-        editor_state: nextState,
-        updated_at: new Date().toISOString(),
-      })
+      .update({ editor_state: nextState, updated_at: new Date().toISOString() })
+      .eq("id", copyId)
       .select("id, name, editor_state, updated_at")
       .single();
 
     if (insertError) {
-      if (copiedPaths.length) await supabase.storage.from(ASSET_BUCKET).remove(copiedPaths);
+      await cleanupCopy();
       setFeedback({ type: "error", text: "Não foi possível duplicar este print. Tente novamente." });
     } else {
       setProjects((current) => [data, ...current]);
@@ -156,14 +182,12 @@ export default function DashboardPage() {
       return;
     }
 
-    const assetPaths = getProjectAssetPaths(project, userData.user.id);
-    if (assetPaths.length) {
-      const { error: storageError } = await supabase.storage.from(ASSET_BUCKET).remove(assetPaths);
-      if (storageError) {
-        setFeedback({ type: "error", text: "Não foi possível excluir as imagens. O print foi mantido para você tentar novamente." });
-        setBusyProjectId(null);
-        return;
-      }
+    const assetPaths = ["background", "icon"].map((assetType) => `${userData.user.id}/${project.id}/${assetType}`);
+    const { error: storageError } = await supabase.storage.from(ASSET_BUCKET).remove(assetPaths);
+    if (storageError) {
+      setFeedback({ type: "error", text: "Não foi possível excluir as imagens. O print foi mantido para você tentar novamente." });
+      setBusyProjectId(null);
+      return;
     }
 
     const { error: deleteError } = await supabase

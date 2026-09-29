@@ -42,4 +42,4 @@ export const BUILT_IN_ICONS = [
   { name: "BTG Pactual", src: "/images/logos/btg-pactual.png" },
 ];
 
-export const EXPORT_READY_MESSAGE = "A imagem será baixada em PNG com 1080 × 1920 px.";
+export const EXPORT_READY_MESSAGE = "A imagem será gerada com segurança em PNG de 1080 × 1920 px.";

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import PrototypeShell from "../_components/prototype-shell";
 import { getSupabaseBrowserClient } from "../_lib/supabase-client";
+import { safeReturnPath } from "./safe-return-path.mjs";
 
 function translateAuthError(message) {
   const normalized = message.toLowerCase();
@@ -13,11 +14,6 @@ function translateAuthError(message) {
   if (normalized.includes("password should be")) return "A senha precisa ter pelo menos 8 caracteres.";
   if (normalized.includes("email rate limit")) return "Muitas tentativas por e-mail. Aguarde alguns minutos.";
   return "Não foi possível concluir o acesso. Tente novamente.";
-}
-
-function safeReturnPath(value) {
-  if (!value?.startsWith("/") || value.startsWith("//")) return "/painel";
-  return value;
 }
 
 export default function AccessPage() {
@@ -35,7 +31,7 @@ export default function AccessPage() {
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
     const params = new URL(window.location.href).searchParams;
-    const nextPath = safeReturnPath(params.get("next"));
+    const nextPath = safeReturnPath(params.get("next"), window.location.origin);
     const shouldExport = params.get("intent") === "export";
     returnPath.current = nextPath;
     const displayTimer = setTimeout(() => {

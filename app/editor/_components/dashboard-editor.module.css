@@ -1,0 +1,350 @@
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+.previewPanel {
+  grid-column: 2;
+  position: sticky;
+  top: 24px;
+}
+
+.controls {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.canvas {
+  display: grid;
+  place-items: center;
+  min-height: 470px;
+  padding: clamp(18px, 4vw, 42px);
+  overflow: hidden;
+  border-radius: 12px;
+  background: #f6f6f6;
+  color: #080808;
+}
+
+.dashboardCard {
+  position: relative;
+  width: min(100%, 680px);
+  min-height: 370px;
+  padding: 38px 34px;
+  background: #fff;
+  container-type: inline-size;
+}
+
+.canvasClean .dashboardCard {
+  width: calc(100% + 36px);
+  box-shadow: 0 1px 0 #e9e9e9;
+}
+
+.canvasCard .dashboardCard {
+  border: 1px solid #dedede;
+  border-radius: 24px;
+  box-shadow: 0 9px 30px #0000000a;
+}
+
+.periodSwitch {
+  display: inline-flex;
+  max-width: calc(100% - 24px);
+  padding: 4px;
+  border-radius: 18px;
+  background: #eeeeee;
+}
+
+.periodSwitch button {
+  min-height: 52px;
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 15px;
+  background: transparent;
+  color: #606060;
+  font: 500 clamp(.78rem, 3.5cqw, 2.8rem)/1.15 Arial, sans-serif;
+  white-space: nowrap;
+}
+
+.periodSwitch button[aria-pressed="true"] {
+  background: #fff;
+  color: #050505;
+  box-shadow: 0 1px 5px #0000000b;
+}
+
+.metrics {
+  display: grid;
+  grid-template-columns: 1.08fr 1fr 1.15fr;
+  gap: 28px;
+  margin-top: 16px;
+}
+
+.metrics article {
+  display: grid;
+  grid-template-rows: 56px auto;
+  row-gap: 0;
+  align-content: start;
+  min-width: 0;
+}
+
+.metrics p {
+  min-height: 0;
+  margin: 0;
+  color: #646464;
+  font: 400 clamp(.72rem, 3.15cqw, 2.6rem)/1.25 Arial, sans-serif;
+  overflow-wrap: anywhere;
+}
+
+.metrics strong {
+  display: block;
+  color: #030303;
+  font: 750 clamp(1.05rem, 5.7cqw, 4.6rem)/1 Arial, sans-serif;
+  letter-spacing: -.035em;
+  white-space: nowrap;
+}
+
+.arrow {
+  position: absolute;
+  top: 31px;
+  right: 22px;
+  font: 400 3.2rem/.8 Arial, sans-serif;
+}
+
+.previewHint,
+.sectionHelp {
+  margin: 14px 0 0;
+  color: #9f9f9f;
+  font-size: .77rem;
+  line-height: 1.5;
+}
+
+.templateGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.templateButton {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #303030;
+  border-radius: 10px;
+  background: #0c0c0c;
+  color: #f2f2f2;
+  text-align: left;
+}
+
+.templateButton[aria-pressed="true"] {
+  border-color: #efc532;
+  box-shadow: 0 0 0 2px #efc5321f;
+}
+
+.templateButton strong {
+  font-size: .82rem;
+}
+
+.templateButton small {
+  color: #9f9f9f;
+  font-size: .68rem;
+  line-height: 1.4;
+}
+
+.templateThumbnail {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: end;
+  gap: 6px;
+  min-height: 68px;
+  padding: 14px 10px;
+  border-radius: 7px;
+  background: #f5f5f5;
+}
+
+.templateThumbnailCard {
+  border: 5px solid #f5f5f5;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px #d7d7d7;
+}
+
+.templateThumbnail i {
+  display: block;
+  height: 23px;
+  border-top: 5px solid #161616;
+  border-bottom: 3px solid #b5b5b5;
+}
+
+.periodEditor {
+  display: flex;
+  gap: 4px;
+  margin-top: 18px;
+  padding: 4px;
+  border-radius: 9px;
+  background: #090909;
+}
+
+.periodEditor button {
+  flex: 1;
+  min-height: 42px;
+  padding: 8px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #9c9c9c;
+  font-weight: 700;
+}
+
+.periodEditor button[aria-pressed="true"] {
+  background: #29240f;
+  color: #efc532;
+  box-shadow: inset 0 0 0 1px #efc53240;
+}
+
+.metricEditorGrid {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.metricEditor {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, .75fr);
+  gap: 12px;
+  padding: 0 14px;
+  border: 1px solid #2c2c2c;
+  border-radius: 10px;
+  background: #0d0d0d;
+}
+
+@media (max-width: 900px) {
+  .metrics { gap: 16px; }
+}
+
+@media (max-width: 760px) {
+  .workspace {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .previewPanel,
+  .controls {
+    width: 100%;
+  }
+
+  .previewPanel {
+    position: static;
+  }
+
+  .canvas {
+    min-height: 430px;
+  }
+}
+
+@media (max-width: 520px) {
+  .canvas {
+    min-height: 420px;
+    padding: 12px;
+  }
+
+  .dashboardCard {
+    min-height: 370px;
+    padding: 28px 20px;
+  }
+
+  .periodSwitch button {
+    min-height: 44px;
+    padding-inline: 12px;
+    font-size: .72rem;
+  }
+
+  .metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .metrics p {
+    min-height: 0;
+    margin: 0;
+    font-size: clamp(.62rem, 3.15cqw, .9rem);
+  }
+
+  .metrics article {
+    grid-template-rows: 30px auto;
+  }
+
+  .metrics strong {
+    font-size: clamp(.9rem, 5.7cqw, 1.65rem);
+  }
+
+  .arrow {
+    top: 26px;
+    right: 10px;
+    font-size: 2.5rem;
+  }
+
+  .templateGrid,
+  .metricEditor {
+    grid-template-columns: 1fr;
+  }
+
+  .metricEditor {
+    gap: 0;
+  }
+}
+
+.canvas[data-exporting="true"] .dashboardCard {
+  width: 100%;
+  max-width: none;
+  min-height: 100%;
+  padding: 64px 48px;
+}
+
+.canvas[data-exporting="true"] {
+  box-sizing: border-box;
+  width: 1280px;
+  max-width: none;
+  height: 720px;
+  min-height: 720px;
+  padding: 48px;
+  border-radius: 0;
+}
+
+.canvas[data-exporting="true"] .periodSwitch {
+  border-radius: 28px;
+}
+
+.canvas[data-exporting="true"] .periodSwitch button {
+  min-height: 86px;
+  padding-inline: 34px;
+  border-radius: 24px;
+  font-size: 2.6rem;
+}
+
+.canvas[data-exporting="true"] .metrics {
+  gap: 54px;
+  margin-top: 24px;
+}
+
+.canvas[data-exporting="true"] .metrics article {
+  grid-template-rows: 92px auto;
+  row-gap: 0;
+}
+
+.canvas[data-exporting="true"] .metrics p {
+  min-height: 0;
+  margin: 0;
+  font-size: 2.3rem;
+}
+
+.canvas[data-exporting="true"] .metrics strong {
+  font-size: 4.2rem;
+}
+
+.canvas[data-exporting="true"] .arrow {
+  top: 60px;
+  right: 52px;
+  font-size: 5rem;
+}

@@ -208,7 +208,7 @@ export default function DashboardPage() {
 
   return (
     <PrototypeShell current="/painel">
-      <div className="page-heading"><div><p className="eyebrow">Seu espaço</p><h1>Meus prints</h1><p>Crie notificações para stories, campanhas, lançamentos e vendas.</p></div><Link className="button button-primary" href="/editor">+ Novo print</Link></div>
+      <div className="page-heading"><div><p className="eyebrow">Seu espaço</p><h1>Meus prints</h1><p>Organize suas notificações e seus Painéis TikTokShop em um só lugar.</p></div><Link className="button button-primary" href="/editor">+ Novo conteúdo</Link></div>
       <div className="dashboard-toolbar"><p className="hint">{email ? `Conta: ${email}` : loading ? "Carregando sua conta..." : "Conta indisponível"}</p><button className="text-link" type="button" onClick={signOut}>Sair da conta</button></div>
       {error && <div className="auth-message auth-message-error" role="alert"><p>{error}</p><button className="button button-secondary" type="button" onClick={() => setLoadAttempt((attempt) => attempt + 1)}>Tentar novamente</button></div>}
       {feedback && <p className={`auth-message auth-message-${feedback.type}`} role="status">{feedback.text}</p>}
@@ -220,13 +220,18 @@ export default function DashboardPage() {
         <div className="visual-grid">
           {projects.map((project) => {
             const values = project.editor_state?.values ?? {};
+            const isTikTokShop = project.editor_state?.editorType === "tiktokshop-dashboard";
+            const dashboardValues = project.editor_state?.dashboard?.values?.today ?? {};
             const isBusy = busyProjectId === project.id;
             return (
               <article className="visual-card" key={project.id} aria-busy={isBusy}>
-                <div className="visual-thumbnail" aria-hidden="true"><div className="mini-notification"><span>{values.appName?.slice(0, 1) || "N"}</span><div><strong>{values.title || project.name}</strong><p>{values.message || "Print salvo no Notivy."}</p></div></div></div>
+                <div className="visual-thumbnail" aria-hidden="true">{isTikTokShop
+                  ? <div className="mini-tiktok-dashboard"><span>Hoje</span><div><small>GMV atribuído</small><strong>{dashboardValues.gmv || "R$ 5,8 mil"}</strong></div><div><small>Itens vendidos</small><strong>{dashboardValues.items || "42"}</strong></div><div><small>Comissão</small><strong>{dashboardValues.commission || "R$ 426,20"}</strong></div></div>
+                  : <div className="mini-notification"><span>{values.appName?.slice(0, 1) || "N"}</span><div><strong>{values.title || project.name}</strong><p>{values.message || "Print salvo no Notivy."}</p></div></div>}
+                </div>
                 <div className="visual-card-body">
-                  <span className="badge">Salvo</span><h2>{project.name}</h2><p>Atualizado em {new Intl.DateTimeFormat("pt-BR").format(new Date(project.updated_at))}</p>
-                  <Link className="button button-secondary button-wide" href={`/editor/?project=${project.id}`} aria-disabled={isBusy}>Abrir print <span aria-hidden="true">→</span></Link>
+                  <span className="badge">{isTikTokShop ? "Painel TikTokShop" : "Salvo"}</span><h2>{project.name}</h2><p>Atualizado em {new Intl.DateTimeFormat("pt-BR").format(new Date(project.updated_at))}</p>
+                  <Link className="button button-secondary button-wide" href={`/editor/?project=${project.id}${isTikTokShop ? "&mode=dashboard" : ""}`} aria-disabled={isBusy}>{isTikTokShop ? "Abrir painel" : "Abrir print"} <span aria-hidden="true">→</span></Link>
                   <div className="visual-card-actions">
                     <button className="button button-quiet" type="button" disabled={busyProjectId !== null} onClick={() => duplicateProject(project)}>{isBusy ? "Aguarde..." : "Duplicar"}</button>
                     <button className="button button-danger" type="button" disabled={busyProjectId !== null} onClick={() => deleteProject(project)}>Excluir</button>

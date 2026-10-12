@@ -7,6 +7,7 @@ import PrototypeShell from "../_components/prototype-shell";
 import NotificationPreview from "../_components/notification-preview";
 import { exportPreviewPng } from "../_lib/export-preview";
 import { getSupabaseBrowserClient, withRequestTimeout } from "../_lib/supabase-client";
+import DashboardEditor from "./_components/dashboard-editor";
 import EditorControls from "./_components/editor-controls";
 import { loadExportDraft, removeExportDraft, saveExportDraft } from "./_lib/export-draft";
 import { DEFAULT_BACKGROUND, DEFAULT_ICON, EXPORT_READY_MESSAGE, INITIAL_CLOCK, INITIAL_VALUES } from "./_lib/editor-config";
@@ -64,6 +65,7 @@ export default function EditorPage() {
   const [hasEditorAccess, setHasEditorAccess] = useState(false);
   const [exportQuota, setExportQuota] = useState(INITIAL_EXPORT_QUOTA);
   const [showUpgradeOffer, setShowUpgradeOffer] = useState(false);
+  const [editorMode, setEditorMode] = useState("notification");
 
   useEffect(() => () => { if (customBackgroundUrl) URL.revokeObjectURL(customBackgroundUrl); }, [customBackgroundUrl]);
   useEffect(() => () => { if (customIconUrl) URL.revokeObjectURL(customIconUrl); }, [customIconUrl]);
@@ -162,7 +164,8 @@ export default function EditorPage() {
   }, [router]);
   useEffect(() => {
     const supabase = getSupabaseBrowserClient();
-    const requestedProjectId = new URL(window.location.href).searchParams.get("project");
+    const searchParams = new URL(window.location.href).searchParams;
+    const requestedProjectId = searchParams.get("project");
     if (!requestedProjectId) {
       supabase.auth.getSession().then(({ data }) => {
         setSaveMessage(data.session
@@ -186,6 +189,11 @@ export default function EditorPage() {
       }
 
       const saved = data.editor_state ?? {};
+      if (saved.editorType === "tiktokshop-dashboard") {
+        setEditorMode("dashboard");
+        setSaveMessage("Painel TikTokShop carregado.");
+        return;
+      }
       setValues({ ...INITIAL_VALUES, ...(saved.values ?? {}) });
       setClock({ ...INITIAL_CLOCK, ...(saved.clock ?? {}) });
       setBackgroundUrl(saved.backgroundUrl || DEFAULT_BACKGROUND);
@@ -596,24 +604,34 @@ export default function EditorPage() {
 
   return <PrototypeShell current="/editor">
     <Link className="text-link back-link" href="/painel">← Voltar aos meus prints</Link>
-    <div className="page-heading"><div><p className="eyebrow">Criador de notificações</p><h1>Crie seu print</h1><p>Personalize a notificação e veja o resultado pronto para seu story.</p></div><span className="badge">Edição ao vivo</span></div>
-    <p className="notice" id="editor-note">Crie direto no navegador, sem instalar aplicativo. As alterações aparecem imediatamente no telefone.</p>
-    <div className="editor-grid">
-      <section className="panel preview-panel" aria-labelledby="preview-title" aria-busy={isExporting}>
-        <div className="section-heading"><h2 id="preview-title">Preview</h2><span className="badge">1080 × 1920</span></div>
-        <NotificationPreview previewRef={previewRef} backgroundUrl={backgroundUrl} appIcon={appIcon} appName={values.appName} title={values.title} message={values.message} notificationTime={values.notificationTime} notificationTransparency={values.notificationTransparency} notificationPosition={values.notificationPosition} notificationX={Number(values.notificationX)} notificationY={Number(values.notificationY)} onNotificationMove={isExporting ? undefined : setFreePosition} editableLockScreen renderControls weekday={values.weekday} day={values.day} month={values.month} alarmTime={values.alarmTime} mainTime={values.mainTime} clockFont={clock.font} clockWeight={Number(clock.weight)} clockColor={clock.color} clockSize={Number(clock.size)} clockSpacing={Number(clock.spacing)} />
-        {values.notificationPosition === "free" && <p className="preview-drag-hint">Arraste a notificação diretamente na tela.</p>}
-      </section>
-      <EditorControls
-        values={values} clock={clock} appIcon={appIcon} backgroundUrl={backgroundUrl}
-        updateValue={updateValue} updateClock={updateClock}
-        selectBuiltInIcon={selectBuiltInIcon} chooseIcon={chooseIcon} chooseBackground={chooseBackground}
-        resetEditor={resetEditor} downloadPng={downloadPng} isExporting={isExporting}
-        exportMessage={exportMessage} downloadFile={downloadFile} sharePng={sharePng}
-        exportQuota={exportQuota}
-        showUpgradeOffer={showUpgradeOffer}
-        saveProject={saveProject} isSaving={isSaving} saveMessage={saveMessage}
-      />
+    <div className="editor-mode-tabs" role="tablist" aria-label="Tipo de conteúdo para editar">
+      <button aria-controls="notification-editor" aria-selected={editorMode === "notification"} id="notification-tab" onClick={() => setEditorMode("notification")} role="tab" type="button">Print de notificação</button>
+      <button aria-controls="dashboard-editor" aria-selected={editorMode === "dashboard"} id="dashboard-tab" onClick={() => setEditorMode("dashboard")} role="tab" type="button">Painel TikTokShop</button>
     </div>
+    {editorMode === "notification" ? <div id="notification-editor" role="tabpanel" aria-labelledby="notification-tab">
+      <div className="page-heading"><div><p className="eyebrow">Criador de notificações</p><h1>Crie seu print</h1><p>Personalize a notificação e veja o resultado pronto para seu story.</p></div><span className="badge">Edição ao vivo</span></div>
+      <p className="notice" id="editor-note">Crie direto no navegador, sem instalar aplicativo. As alterações aparecem imediatamente no telefone.</p>
+      <div className="editor-grid">
+        <section className="panel preview-panel" aria-labelledby="preview-title" aria-busy={isExporting}>
+          <div className="section-heading"><h2 id="preview-title">Preview</h2><span className="badge">1080 × 1920</span></div>
+          <NotificationPreview previewRef={previewRef} backgroundUrl={backgroundUrl} appIcon={appIcon} appName={values.appName} title={values.title} message={values.message} notificationTime={values.notificationTime} notificationTransparency={values.notificationTransparency} notificationPosition={values.notificationPosition} notificationX={Number(values.notificationX)} notificationY={Number(values.notificationY)} onNotificationMove={isExporting ? undefined : setFreePosition} editableLockScreen renderControls weekday={values.weekday} day={values.day} month={values.month} alarmTime={values.alarmTime} mainTime={values.mainTime} clockFont={clock.font} clockWeight={Number(clock.weight)} clockColor={clock.color} clockSize={Number(clock.size)} clockSpacing={Number(clock.spacing)} />
+          {values.notificationPosition === "free" && <p className="preview-drag-hint">Arraste a notificação diretamente na tela.</p>}
+        </section>
+        <EditorControls
+          values={values} clock={clock} appIcon={appIcon} backgroundUrl={backgroundUrl}
+          updateValue={updateValue} updateClock={updateClock}
+          selectBuiltInIcon={selectBuiltInIcon} chooseIcon={chooseIcon} chooseBackground={chooseBackground}
+          resetEditor={resetEditor} downloadPng={downloadPng} isExporting={isExporting}
+          exportMessage={exportMessage} downloadFile={downloadFile} sharePng={sharePng}
+          exportQuota={exportQuota}
+          showUpgradeOffer={showUpgradeOffer}
+          saveProject={saveProject} isSaving={isSaving} saveMessage={saveMessage}
+        />
+      </div>
+    </div> : <div id="dashboard-editor" role="tabpanel" aria-labelledby="dashboard-tab">
+      <div className="page-heading"><div><p className="eyebrow">Criador de painéis</p><h1>Monte seu Painel TikTokShop</h1><p>Escolha um exemplo e personalize períodos, nomes e valores em tempo real.</p></div><span className="badge">2 modelos</span></div>
+      <p className="notice">Edite, salve no painel e exporte para o telefone sem alterar seus prints de notificação.</p>
+      <DashboardEditor exportQuota={exportQuota} setExportQuota={setExportQuota} showUpgradeOffer={showUpgradeOffer} setShowUpgradeOffer={setShowUpgradeOffer} />
+    </div>}
   </PrototypeShell>;
 }

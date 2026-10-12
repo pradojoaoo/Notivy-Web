@@ -119,6 +119,11 @@ label .hint { font-weight: 400; }
 .mini-notification > span { background: var(--accent); color: #080808; border-radius: 7px; padding: 8px; }
 .mini-notification strong { font-size: 0.75rem; }
 .mini-notification p { font-size: 0.65rem; margin: 3px 0 0; }
+.mini-tiktok-dashboard { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; width: 100%; padding: 16px; border-radius: 14px; background: #fff; color: #111; box-shadow: 0 10px 30px #0002; }
+.mini-tiktok-dashboard > span { grid-column: 1 / -1; justify-self: start; padding: 6px 10px; border-radius: 9px; background: #eee; color: #555; font-size: .66rem; }
+.mini-tiktok-dashboard div { min-width: 0; }
+.mini-tiktok-dashboard small { display: block; min-height: 28px; color: #6b6b6b; font-size: .52rem; line-height: 1.25; }
+.mini-tiktok-dashboard strong { display: block; margin-top: 8px; color: #050505; font-size: .75rem; white-space: nowrap; }
 .visual-card-body { padding: 22px; }
 .visual-card-body h2 { margin: 16px 0 8px; font-size: 1.15rem; }
 .visual-card-body p { color: var(--muted); font-size: 0.8rem; }
@@ -153,6 +158,10 @@ label .hint { font-weight: 400; }
 .editor-actions + .hint { margin: 16px 0 0; }
 .export-quota { margin: 10px 0 0; color: var(--accent); font-size: .88rem; font-weight: 750; }
 .export-upgrade-link { display: inline-block; margin-top: 9px; }
+.editor-mode-tabs { display: flex; gap: 6px; margin: 6px 0 34px; padding: 5px; border: 1px solid var(--line); border-radius: 12px; background: #090909; }
+.editor-mode-tabs button { display: flex; align-items: center; justify-content: center; gap: 9px; flex: 1; min-height: 50px; padding: 10px 16px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: .86rem; font-weight: 800; }
+.editor-mode-tabs button[aria-selected="true"] { background: #26210d; color: var(--accent); box-shadow: inset 0 0 0 1px #efc53242; }
+.editor-mode-tabs button span { padding: 3px 6px; border-radius: 999px; background: var(--accent); color: #090909; font-size: .58rem; letter-spacing: .04em; text-transform: uppercase; }
 
 @media (max-width: 760px) {
   .site-header, .page-container, .site-footer { width: calc(100% - 32px); }
@@ -180,6 +189,7 @@ label .hint { font-weight: 400; }
   .editor-grid { display: flex; flex-direction: column; }
   .preview-panel, .editor-panel { width: 100%; }
   .preview-panel { position: static; }
+  .editor-mode-tabs { margin-bottom: 26px; }
 }
 
 @media (max-width: 440px) {
@@ -189,6 +199,7 @@ label .hint { font-weight: 400; }
   .step-number { display: none; }
   .panel { padding: 18px; }
   .editor-actions { flex-direction: column; }
+  .editor-mode-tabs { align-items: stretch; flex-direction: column; }
 }
 
 /* Direção visual inspirada na referência preta e amarela. */

@@ -10,7 +10,7 @@ export default function PrototypeShell({ current, children }) {
   return (
     <>
       <a className="skip-link" href="#conteudo">Pular para o conteúdo</a>
-      <div className="prototype-banner"><span className="prototype-dot" aria-hidden="true" />Protótipo de navegação · dados ilustrativos</div>
+      <div className="prototype-banner"><span className="prototype-dot" aria-hidden="true" />Crie, salve e exporte seus prints</div>
       <header className="site-header">
         <Link className="brand" href="/" aria-label="Notivy — início"><span className="brand-name">Notivy</span></Link>
         <nav className="step-nav" aria-label={customerArea ? "Área do cliente" : "Navegação de acesso"}>

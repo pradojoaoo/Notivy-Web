@@ -1,191 +1,15 @@
 import { domToCanvas } from "modern-screenshot";
-import { filterGlassPixels } from "./notification-glass";
 
 const OUTPUT_WIDTH = 1080;
 const OUTPUT_HEIGHT = 1920;
-const RENDER_SCALE = 1;
+const RENDER_SCALE = 2;
 
 function preserveLineClamp(node) {
-  if (node instanceof HTMLElement && node.classList.contains("notification-readable")) {
-    node.style.visibility = "hidden";
-  }
-  if (node instanceof HTMLElement && node.closest(".lock-screen-controls")) {
-    node.style.filter = "none";
-    node.style.textShadow = "none";
-  }
   // Chromium reports a clamped -webkit-box as flow-root in computed styles.
   if (node instanceof HTMLElement && Number.parseInt(node.style.webkitLineClamp, 10) > 0) {
     node.style.display = "-webkit-box";
     node.style.webkitBoxOrient = "vertical";
   }
-}
-
-function roundedRect(context, x, y, width, height, radius) {
-  const r = Math.min(radius, width / 2, height / 2);
-  context.beginPath();
-  context.moveTo(x + r, y);
-  context.lineTo(x + width - r, y);
-  context.quadraticCurveTo(x + width, y, x + width, y + r);
-  context.lineTo(x + width, y + height - r);
-  context.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
-  context.lineTo(x + r, y + height);
-  context.quadraticCurveTo(x, y + height, x, y + height - r);
-  context.lineTo(x, y + r);
-  context.quadraticCurveTo(x, y, x + r, y);
-  context.closePath();
-}
-
-function loadImage(source) {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = reject;
-    image.src = source;
-  });
-}
-
-function backgroundImageUrl(element) {
-  const value = getComputedStyle(element).backgroundImage;
-  const match = value.match(/^url\(["']?(.*?)["']?\)$/);
-  return match?.[1] ?? "";
-}
-
-function canvasFont(element, scale) {
-  const style = getComputedStyle(element);
-  return `${style.fontWeight} ${Number.parseFloat(style.fontSize) * scale}px ${style.fontFamily}`;
-}
-
-function drawSingleLine(context, element, origin, scale) {
-  const bounds = element.getBoundingClientRect();
-  const style = getComputedStyle(element);
-  context.font = canvasFont(element, scale);
-  context.fillStyle = style.color;
-  context.textBaseline = "top";
-  context.fillText(element.textContent, (bounds.left - origin.left) * scale, (bounds.top - origin.top) * scale);
-}
-
-function drawWrappedText(context, element, origin, scale) {
-  const bounds = element.getBoundingClientRect();
-  const style = getComputedStyle(element);
-  const words = element.textContent.trim().split(/\s+/);
-  const maxWidth = bounds.width * scale;
-  const lineHeight = Number.parseFloat(style.lineHeight) * scale;
-  const lines = [];
-  let line = "";
-  context.font = canvasFont(element, scale);
-  for (const word of words) {
-    const candidate = line ? `${line} ${word}` : word;
-    if (line && context.measureText(candidate).width > maxWidth) {
-      lines.push(line);
-      line = word;
-    } else line = candidate;
-  }
-  if (line) lines.push(line);
-  if (lines.length > 2) {
-    lines.length = 2;
-    while (context.measureText(`${lines[1]}…`).width > maxWidth) lines[1] = lines[1].slice(0, -1);
-    lines[1] += "…";
-  }
-  context.fillStyle = style.color;
-  context.textBaseline = "top";
-  const x = (bounds.left - origin.left) * scale;
-  const y = (bounds.top - origin.top) * scale;
-  lines.forEach((text, index) => context.fillText(text, x, y + index * lineHeight));
-}
-
-async function drawNotification(context, screen, output) {
-  const notification = screen.querySelector(".notification-readable");
-  if (!notification) return;
-  const origin = screen.getBoundingClientRect();
-  const bounds = notification.getBoundingClientRect();
-  const scale = OUTPUT_WIDTH / origin.width;
-  const x = (bounds.left - origin.left) * scale;
-  const y = (bounds.top - origin.top) * scale;
-  const width = bounds.width * scale;
-  const height = bounds.height * scale;
-  const radius = height * .31;
-  const notificationStyle = getComputedStyle(notification);
-  const cssBlur = Number.parseFloat(notificationStyle.getPropertyValue("--notification-glass-blur")) || 18;
-  const saturation = notificationStyle.getPropertyValue("--notification-glass-saturation").trim() || "125%";
-  const tintStart = notificationStyle.getPropertyValue("--notification-tint-start").trim() || "rgba(58, 70, 84, .78)";
-  const tintMiddle = notificationStyle.getPropertyValue("--notification-tint-middle").trim() || "rgba(31, 43, 58, .74)";
-  const tintEnd = notificationStyle.getPropertyValue("--notification-tint-end").trim() || "rgba(25, 35, 50, .80)";
-  const blurRadius = cssBlur * scale;
-  const glassPadding = Math.ceil(blurRadius * 3);
-
-  context.save();
-  roundedRect(context, x, y, width, height, radius);
-  context.clip();
-  const glass = document.createElement("canvas");
-  glass.width = Math.ceil(width + glassPadding * 2);
-  glass.height = Math.ceil(height + glassPadding * 2);
-  const glassContext = glass.getContext("2d");
-  const glassX = Math.floor(x - glassPadding);
-  const glassY = Math.floor(y - glassPadding);
-  const backdrop = context.getImageData(0, 0, output.width, output.height);
-  const glassPixels = glassContext.createImageData(glass.width, glass.height);
-  // Extend the wallpaper at the screen edges instead of introducing transparent
-  // black pixels into the blur kernel.
-  for (let row = 0; row < glass.height; row++) {
-    const sourceY = Math.max(0, Math.min(output.height - 1, glassY + row));
-    for (let column = 0; column < glass.width; column++) {
-      const sourceX = Math.max(0, Math.min(output.width - 1, glassX + column));
-      const sourceIndex = (sourceY * output.width + sourceX) * 4;
-      const targetIndex = (row * glass.width + column) * 4;
-      for (let channel = 0; channel < 4; channel++) {
-        glassPixels.data[targetIndex + channel] = backdrop.data[sourceIndex + channel];
-      }
-    }
-  }
-  filterGlassPixels(glassPixels.data, glass.width, glass.height, blurRadius, Number.parseFloat(saturation) / 100);
-  glassContext.putImageData(glassPixels, 0, 0);
-  context.drawImage(glass, glassX, glassY);
-  // Match the CSS 110deg gradient, whose endpoints are not the box corners.
-  const angle = 110 * Math.PI / 180;
-  const dx = Math.sin(angle);
-  const dy = -Math.cos(angle);
-  const halfLength = (Math.abs(width * dx) + Math.abs(height * dy)) / 2;
-  const centerX = x + width / 2;
-  const centerY = y + height / 2;
-  const tint = context.createLinearGradient(centerX - dx * halfLength, centerY - dy * halfLength, centerX + dx * halfLength, centerY + dy * halfLength);
-  tint.addColorStop(0, tintStart);
-  tint.addColorStop(.55, tintMiddle);
-  tint.addColorStop(1, tintEnd);
-  context.fillStyle = tint;
-  context.fillRect(x, y, width, height);
-  context.restore();
-
-  context.save();
-  roundedRect(context, x + scale * .45, y + scale * .45, width - scale * .9, height - scale * .9, radius);
-  context.strokeStyle = "rgba(255, 255, 255, .48)";
-  context.lineWidth = Math.max(1.5, scale * .75);
-  context.stroke();
-  context.restore();
-
-  const icon = notification.querySelector(".notification-icon");
-  const iconBounds = icon.getBoundingClientRect();
-  const iconX = (iconBounds.left - origin.left) * scale;
-  const iconY = (iconBounds.top - origin.top) * scale;
-  const iconWidth = iconBounds.width * scale;
-  const iconHeight = iconBounds.height * scale;
-  const source = backgroundImageUrl(icon);
-  if (source) {
-    const image = await loadImage(source);
-    context.save();
-    roundedRect(context, iconX, iconY, iconWidth, iconHeight, iconWidth * .23);
-    context.clip();
-    context.drawImage(image, iconX, iconY, iconWidth, iconHeight);
-    context.restore();
-  }
-
-  const appName = notification.querySelector(".notification-app-name");
-  const title = notification.querySelector(".notification-title");
-  const message = notification.querySelector(".notification-readable-copy > span");
-  const time = notification.querySelector(".notification-readable-time");
-  drawSingleLine(context, appName, origin, scale);
-  drawSingleLine(context, title, origin, scale);
-  drawWrappedText(context, message, origin, scale);
-  drawSingleLine(context, time, origin, scale);
 }
 
 export async function exportPreviewPng(screen) {
@@ -199,7 +23,7 @@ export async function exportPreviewPng(screen) {
   const options = {
     width,
     height,
-    // Supersample text, SVG icons and glass before a single final downsample.
+    // Capture the complete editor composition at 2x before one final downsample.
     scale: (OUTPUT_WIDTH * RENDER_SCALE) / width,
     // Export the rectangular wallpaper, excluding the decorative phone frame.
     style: { borderRadius: "0", margin: "0", transform: "none" },
@@ -221,7 +45,6 @@ export async function exportPreviewPng(screen) {
   context.imageSmoothingEnabled = true;
   context.imageSmoothingQuality = "high";
   context.drawImage(snapshot, 0, 0, OUTPUT_WIDTH, OUTPUT_HEIGHT);
-  await drawNotification(context, screen, output);
   return new Promise((resolve, reject) => output.toBlob(
     (blob) => blob ? resolve(blob) : reject(new Error("PNG vazio")),
     "image/png",

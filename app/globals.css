@@ -325,23 +325,23 @@ h1,h2,h3,.brand-name,.button{font-family:"Segoe UI",Arial,sans-serif;text-transf
 /* A referência mais recente é usada integralmente para preservar cada detalhe da tela. */
 .phone-shell-3d .preview-canvas-photo{aspect-ratio:9/16;container-type:inline-size;background:#101a32 url("/images/iphone-generic-v4.png") center/cover no-repeat;box-shadow:none}
 .phone-shell-3d .preview-canvas-photo::before{display:none}
-.preview-canvas-photo .notification-readable{--notification-glass-blur:18px;--notification-glass-saturation:125%;--notification-tint-start:rgba(58,70,84,.78);--notification-tint-middle:rgba(31,43,58,.74);--notification-tint-end:rgba(25,35,50,.80);top:62%;right:3.1cqw;left:3.1cqw;grid-template-columns:8.7cqw minmax(0,1fr);align-items:center;gap:2.9cqw;min-height:16.5cqw;padding:2.3cqw 3.1cqw;overflow:hidden;border:1px solid #ffffff7a;border-radius:6cqw;background:linear-gradient(110deg,var(--notification-tint-start),var(--notification-tint-middle) 55%,var(--notification-tint-end));color:#fff;box-shadow:inset 0 1px #ffffff45,0 5px 16px #0005;backdrop-filter:blur(var(--notification-glass-blur)) saturate(var(--notification-glass-saturation));-webkit-backdrop-filter:blur(var(--notification-glass-blur)) saturate(var(--notification-glass-saturation))}
-.preview-canvas-photo .notification-transparency-less{--notification-glass-blur:18px;--notification-glass-saturation:125%;--notification-tint-start:rgba(58,70,84,.78);--notification-tint-middle:rgba(31,43,58,.74);--notification-tint-end:rgba(25,35,50,.80)}
-.preview-canvas-photo .notification-transparency-more{--notification-glass-blur:24px;--notification-glass-saturation:145%;--notification-tint-start:rgba(58,70,84,.22);--notification-tint-middle:rgba(31,43,58,.18);--notification-tint-end:rgba(25,35,50,.26)}
+.preview-canvas-photo .notification-readable{--notification-glass-blur:26px;--notification-glass-saturation:140%;--notification-tint-start:rgba(120,130,140,.38);--notification-tint-middle:rgba(67,78,91,.34);--notification-tint-end:rgba(45,56,70,.40);top:62%;right:3.1cqw;left:3.1cqw;grid-template-columns:10.6cqw minmax(0,1fr);align-items:center;gap:3.1cqw;min-height:17.8cqw;padding:2.9cqw 3.5cqw;overflow:hidden;border:1px solid #ffffff29;border-radius:6.6cqw;background:linear-gradient(110deg,var(--notification-tint-start),var(--notification-tint-middle) 55%,var(--notification-tint-end));color:#fff;box-shadow:inset 0 1px #ffffff1f,0 5px 16px #0000003d;backdrop-filter:blur(26px)}
+.preview-canvas-photo .notification-transparency-less{--notification-glass-blur:26px;--notification-glass-saturation:140%;--notification-tint-start:rgba(120,130,140,.38);--notification-tint-middle:rgba(67,78,91,.34);--notification-tint-end:rgba(45,56,70,.40)}
+.preview-canvas-photo .notification-transparency-more{--notification-glass-blur:30px;--notification-glass-saturation:150%;--notification-tint-start:rgba(125,136,146,.24);--notification-tint-middle:rgba(72,83,96,.20);--notification-tint-end:rgba(49,60,74,.25);backdrop-filter:blur(30px)}
 .preview-canvas-photo .notification-icon-purple{width:38px;height:38px;font-size:1rem}
-.notification-readable-copy{display:block;min-width:0;text-shadow:0 1px 2px #0005}
+.notification-readable-copy{display:grid;min-width:0;gap:.9cqw;text-shadow:0 1px 2px #0005}
+.notification-readable-header{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:2.2cqw;min-width:0}
 .notification-readable-copy strong{display:block;overflow:hidden;margin-bottom:3px;font-size:.68rem;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}
-.notification-readable-copy>span{display:-webkit-box;overflow:hidden;font-size:.58rem;line-height:1.25;-webkit-box-orient:vertical;-webkit-line-clamp:2}
-.notification-readable-time{align-self:start;padding-top:1px;color:#eef1f3;font-size:.55rem;line-height:1.2;text-shadow:0 1px 4px #0008}
+.notification-readable-copy>.notification-message{display:-webkit-box;overflow:hidden;font-size:.58rem;line-height:1.25;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.notification-readable-time{color:#eef1f3;font-weight:400;line-height:1.1;white-space:nowrap;opacity:.72;text-shadow:0 1px 4px #0008}
 .background-swatch{background:url("/images/iphone-generic-v4.png") center/cover no-repeat}
 
 /* Proporções da notificação medidas na imagem de referência (1280 px de largura). */
-.notification-icon-exact{width:8.7cqw;height:8.7cqw;border:0;border-radius:2.1cqw;background-position:center;background-size:cover;box-shadow:0 1px 4px #29005044}
-.preview-canvas-photo .notification-readable-copy strong{margin-bottom:.3cqw;font-family:"SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:2.9cqw;font-weight:600;line-height:1.1}
-.preview-canvas-photo .notification-readable-copy .notification-app-name{margin-bottom:0;padding-right:11cqw;font-family:"SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:2cqw;font-weight:500;line-height:1.1;opacity:.82}
-.preview-canvas-photo .notification-readable-copy .notification-title{padding-right:11cqw}
-.preview-canvas-photo .notification-readable-copy>span{font-family:"SF Pro Text",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:2.7cqw;font-weight:400;line-height:1.2;-webkit-line-clamp:2}
-.preview-canvas-photo .notification-readable-time{position:absolute;top:2.6cqw;right:3.1cqw;font-size:2.6cqw;line-height:1.1}
+.notification-icon-exact{width:10.6cqw;height:10.6cqw;border:0;border-radius:2.5cqw;background-position:center;background-size:cover;box-shadow:0 1px 4px #00000038}
+.preview-canvas-photo .notification-readable-copy strong{margin:0;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",sans-serif;font-size:3.15cqw;font-weight:600;line-height:1.08}
+.preview-canvas-photo .notification-readable-copy .notification-title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.preview-canvas-photo .notification-readable-copy>.notification-message{max-width:calc(100% - 7cqw);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;font-size:2.85cqw;font-weight:400;line-height:1.27;-webkit-line-clamp:2}
+.preview-canvas-photo .notification-readable-time{padding-top:.15cqw;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;font-size:2.65cqw}
 
 /* Camada editável: esconde somente a interface original e mantém a fotografia. */
 .preview-mask-original::after{position:absolute;top:0;right:0;left:0;z-index:1;height:39%;content:"";background:linear-gradient(180deg,#a7cee3 0%,#9fc9df 100%)}

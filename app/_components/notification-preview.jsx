@@ -5,7 +5,6 @@ import { useRef } from "react";
 export default function NotificationPreview({
   backgroundUrl = "/images/iphone-generic-v4.png",
   appIcon = "/images/nu-notification-icon-v1.png",
-  appName = "Nubank",
   title = "Transferência recebida",
   message = "Você recebeu uma transferência de R$427,80 de SHPAY.",
   notificationTime = "agora",
@@ -32,6 +31,9 @@ export default function NotificationPreview({
 }) {
   const canvasRef = useRef(null);
   const isFreePosition = notificationPosition === "free";
+  const notificationGlassFilter = notificationTransparency === "more"
+    ? "blur(30px) saturate(150%)"
+    : "blur(26px) saturate(140%)";
   const canvasClassName = [
     "preview-canvas",
     "preview-canvas-photo",
@@ -103,7 +105,11 @@ export default function NotificationPreview({
           <div
             data-preview-layer="2"
             className={`notification notification-private notification-readable notification-transparency-${notificationTransparency} notification-position-${notificationPosition}`}
-            style={isFreePosition ? { left: `${notificationX}%`, top: `${notificationY}%` } : undefined}
+            style={{
+              ...(isFreePosition ? { left: `${notificationX}%`, top: `${notificationY}%` } : {}),
+              backdropFilter: notificationGlassFilter,
+              WebkitBackdropFilter: notificationGlassFilter,
+            }}
             onPointerDown={(event) => {
               if (!isFreePosition) return;
               event.currentTarget.setPointerCapture(event.pointerId);
@@ -116,11 +122,12 @@ export default function NotificationPreview({
           >
             <span className="notification-icon notification-icon-exact" style={{ backgroundImage: `url("${appIcon}")` }} />
             <span className="notification-readable-copy">
-              <strong className="notification-app-name">{appName}</strong>
-              <strong className="notification-title">{title}</strong>
-              <span>{message}</span>
+              <span className="notification-readable-header">
+                <strong className="notification-title">{title}</strong>
+                <span className="notification-readable-time">{notificationTime}</span>
+              </span>
+              <span className="notification-message">{message}</span>
             </span>
-            <span className="notification-readable-time">{notificationTime}</span>
           </div>
 
           {renderControls && (
